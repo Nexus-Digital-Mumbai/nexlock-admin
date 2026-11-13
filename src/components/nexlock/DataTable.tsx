@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
   Search, Download, Filter, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  MoreHorizontal, Trash2, Inbox,
+  MoreHorizontal, Trash2, Inbox, X, FileSpreadsheet, FileText, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,11 +36,6 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   searchPlaceholder?: string;
   searchKeys?: (keyof T)[];
-  // Set this when `data` is already server-paginated (the caller fetches one page at a time and
-  // runs its own search against the backend) — otherwise this component's own search box only
-  // ever filters the current page's already-fetched rows, silently hiding matches that exist on
-  // other pages. Hides the built-in search input entirely so there's only one (working) search
-  // box on the page, rather than two look-alike ones where only one actually searches everything.
   hideSearch?: boolean;
   pageSize?: number;
   bulkActions?: ReactNode;
@@ -58,7 +53,7 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   data,
   columns,
-  searchPlaceholder = "Search…",
+  searchPlaceholder = "Search records…",
   searchKeys,
   hideSearch = false,
   pageSize = 10,
@@ -69,7 +64,7 @@ export function DataTable<T>({
   onBulkDelete,
   onRowClick,
   loading,
-  emptyTitle = "No records yet",
+  emptyTitle = "No records found",
   emptyDescription = "There are no items matching your search or filters.",
   emptyAction,
 }: DataTableProps<T>) {
@@ -82,7 +77,8 @@ export function DataTable<T>({
   const [showColumnFilters, setShowColumnFilters] = useState(false);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
-  // Helper to extract clean plain text from cell values / custom React nodes
+  const activeFilterCount = Object.values(columnFilters).filter(Boolean).length;
+
   const getCellText = (row: T, c: Column<T>): string => {
     if (c.accessor) return String(c.accessor(row));
     const val = (row as any)[c.key];
@@ -97,7 +93,7 @@ export function DataTable<T>({
       
       if (typeof rendered === "object" && (rendered as any).props) {
         const props = (rendered as any).props;
-        if (props.status) return String(props.status); // StatusBadge helper
+        if (props.status) return String(props.status);
         
         if (props.children !== undefined) {
           const children = props.children;
@@ -191,11 +187,11 @@ export function DataTable<T>({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `export_${Date.now()}.csv`);
+    link.setAttribute("download", `nexus_export_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Excel CSV export ready");
+    toast.success("CSV export downloaded successfully");
   };
 
   const exportToPDF = () => {
@@ -208,24 +204,24 @@ export function DataTable<T>({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Export PDF - NexLock Platform</title>
+          <title>Export PDF - Nexus Enterprise</title>
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; color: #0f172a; background: #fff; }
             .header { margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
-            .logo { font-size: 20px; font-weight: bold; color: #0f172a; margin: 0; }
-            .subtitle { font-size: 11px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+            .logo { font-size: 22px; font-weight: 800; color: #1e3a8a; margin: 0; }
+            .subtitle { font-size: 11px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
             .timestamp { float: right; font-size: 11px; color: #64748b; margin-top: 10px; }
             table { width: 100%; border-collapse: collapse; margin-top: 15px; }
             th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 11px; }
-            th { background-color: #f8fafc; font-weight: 600; color: #334155; }
-            tr:nth-child(even) { background-color: #f8fafc; }
+            th { background-color: #f8fafc; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.04em; }
+            tr:nth-child(even) { background-color: #fbfcfe; }
           </style>
         </head>
         <body>
           <div class="header">
-            <span class="timestamp">Generated on: ${new Date().toLocaleString()}</span>
-            <h1 class="logo">NexLock Enterprise</h1>
-            <div class="subtitle">Platform Console Data Export</div>
+            <span class="timestamp">Generated: ${new Date().toLocaleString()}</span>
+            <h1 class="logo">Nexus Enterprise</h1>
+            <div class="subtitle">Platform Management Data Export</div>
           </div>
           <table>
             <thead>
@@ -255,75 +251,97 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="card-surface overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
+    <div className="overflow-hidden rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl shadow-[0_12px_36px_-6px_rgba(100,105,145,0.08)] transition-all">
+      {/* Table Toolbar */}
+      <div className="flex flex-col gap-3 border-b border-white/60 dark:border-white/10 p-4 md:flex-row md:items-center md:justify-between bg-white/40 dark:bg-white/5 backdrop-blur-md">
         {!hideSearch && (
           <div className="relative w-full md:max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/80" />
             <Input
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
               placeholder={searchPlaceholder}
-              className="pl-9"
+              className="h-10 pl-10 pr-8 text-xs rounded-full bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 hover:bg-white focus-visible:bg-white shadow-xs transition-all"
             />
+            {query && (
+              <button
+                onClick={() => { setQuery(""); setPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-full hover:bg-black/5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
         )}
         <div className="flex flex-wrap items-center gap-2">
           {selected.size > 0 && (
-            <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs text-primary">
-              <span className="font-medium">{selected.size} selected</span>
+            <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary animate-fade-in shadow-xs">
+              <span>{selected.size} selected</span>
               {bulkActions}
               {onBulkDelete && (
-                <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs text-destructive hover:text-destructive" onClick={handleBulkDelete}>
-                  <Trash2 className="h-3.5 w-3.5" />Delete
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6.5 gap-1 text-xs text-destructive hover:bg-destructive/15 hover:text-destructive px-2 font-medium rounded-full"
+                  onClick={handleBulkDelete}
+                >
+                  <Trash2 className="h-3 w-3" />Delete
                 </Button>
               )}
             </div>
           )}
           {filters}
           <Button
-            variant={showColumnFilters ? "secondary" : "outline"}
+            variant={showColumnFilters || activeFilterCount > 0 ? "secondary" : "outline"}
             size="sm"
-            className="gap-1.5"
+            className="h-10 rounded-full gap-1.5 text-xs font-medium border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 hover:bg-white shadow-xs px-4"
             onClick={() => {
               setShowColumnFilters(!showColumnFilters);
-              setColumnFilters({});
+              if (showColumnFilters) setColumnFilters({});
             }}
           >
-            <Filter className="h-3.5 w-3.5" />Filter
+            <Filter className="h-3.5 w-3.5" />
+            <span>Filter</span>
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                {activeFilterCount}
+              </span>
+            )}
           </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="h-10 rounded-full gap-1.5 text-xs font-medium border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 hover:bg-white shadow-xs px-4">
                 <Download className="h-3.5 w-3.5" />Export
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
-                Export as Excel (CSV)
+            <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border border-white/80 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5">
+              <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer gap-2 text-xs font-medium rounded-xl px-3 py-2">
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Export as CSV (Excel)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportToPDF} className="cursor-pointer">
-                Export as PDF Document
+              <DropdownMenuItem onClick={exportToPDF} className="cursor-pointer gap-2 text-xs font-medium rounded-xl px-3 py-2">
+                <FileText className="h-4 w-4 text-rose-600" /> Export as PDF Report
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
+      {/* Table Container */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+          <thead className="sticky top-0 z-10 border-b border-white/60 dark:border-white/10 bg-white/50 dark:bg-white/5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] dark:text-slate-400 backdrop-blur-md">
             <tr>
-              <th className="w-10 px-4 py-3 text-left">
-                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+              <th className="w-10 px-4 py-3.5 text-left">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all rows" />
               </th>
               {columns.map((c) => {
                 const isSort = sort?.key === String(c.key);
                 return (
-                  <th key={String(c.key)} className={cn("px-4 py-3 text-left font-medium", c.className)}>
+                  <th key={String(c.key)} className={cn("px-4 py-3.5 text-left font-semibold", c.className)}>
                     {c.sortable ? (
                       <button
-                        className="inline-flex items-center gap-1 hover:text-foreground"
+                        className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors group cursor-pointer"
                         onClick={() => setSort((s) => {
                           const k = String(c.key);
                           if (s?.key !== k) return { key: k, dir: "asc" };
@@ -331,17 +349,27 @@ export function DataTable<T>({
                           return null;
                         })}
                       >
-                        {c.header}
-                        {isSort ? (sort?.dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />) : <ChevronDown className="h-3 w-3 opacity-30" />}
+                        <span>{c.header}</span>
+                        {isSort ? (
+                          sort?.dir === "asc" ? (
+                            <ChevronUp className="h-3.5 w-3.5 text-primary font-bold" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5 text-primary font-bold" />
+                          )
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5 opacity-30 group-hover:opacity-75" />
+                        )}
                       </button>
-                    ) : c.header}
+                    ) : (
+                      c.header
+                    )}
                   </th>
                 );
               })}
-              <th className="w-10 px-4 py-3" />
+              <th className="w-12 px-4 py-3.5 text-right font-medium">Actions</th>
             </tr>
             {showColumnFilters && (
-              <tr className="border-t border-border bg-muted/10">
+              <tr className="border-t border-border/60 bg-muted/20 animate-fade-in">
                 <th className="px-4 py-2" />
                 {columns.map((c) => (
                   <th key={`filter-${String(c.key)}`} className="px-4 py-2">
@@ -355,7 +383,7 @@ export function DataTable<T>({
                         });
                         setPage(1);
                       }}
-                      className="h-7 px-2 py-1 text-xs font-normal bg-card border-border"
+                      className="h-7.5 px-2.5 py-1 text-xs font-normal bg-card border-border/80 focus-visible:border-primary/50"
                     />
                   </th>
                 ))}
@@ -363,25 +391,27 @@ export function DataTable<T>({
               </tr>
             )}
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border/60">
             {loading && Array.from({ length: 6 }).map((_, i) => (
-              <tr key={`sk-${i}`} className="border-t border-border">
-                <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+              <tr key={`sk-${i}`} className="hover:bg-muted/30">
+                <td className="px-4 py-3.5"><Skeleton className="h-4 w-4 rounded" /></td>
                 {columns.map((c) => (
-                  <td key={String(c.key)} className="px-4 py-3"><Skeleton className="h-4 w-full max-w-[140px]" /></td>
+                  <td key={String(c.key)} className="px-4 py-3.5">
+                    <Skeleton className="h-4 w-full max-w-[140px] rounded" />
+                  </td>
                 ))}
-                <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+                <td className="px-4 py-3.5"><Skeleton className="h-4 w-4 ml-auto rounded" /></td>
               </tr>
             ))}
             {!loading && pageRows.length === 0 && (
               <tr>
-                <td colSpan={columns.length + 2} className="px-4 py-16">
-                  <div className="mx-auto flex max-w-sm flex-col items-center text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                      <Inbox className="h-5 w-5" />
+                <td colSpan={columns.length + 2} className="px-4 py-16 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground">
+                      <Inbox className="h-6 w-6 text-primary/70" />
                     </div>
-                    <h4 className="mt-3 text-sm font-semibold text-foreground">{emptyTitle}</h4>
-                    <p className="mt-1 text-xs text-muted-foreground">{emptyDescription}</p>
+                    <h4 className="mt-3 text-sm font-bold text-foreground">{emptyTitle}</h4>
+                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{emptyDescription}</p>
                     {emptyAction && <div className="mt-4">{emptyAction}</div>}
                   </div>
                 </td>
@@ -394,8 +424,8 @@ export function DataTable<T>({
                 <tr
                   key={k}
                   className={cn(
-                    "border-t border-border transition-colors hover:bg-muted/40",
-                    checked && "bg-primary/5",
+                    "transition-colors duration-150 hover:bg-muted/40",
+                    checked && "bg-primary/5 hover:bg-primary/8",
                     onRowClick && "cursor-pointer",
                   )}
                   onClick={onRowClick ? (e) => {
@@ -403,23 +433,23 @@ export function DataTable<T>({
                     onRowClick(row);
                   } : undefined}
                 >
-                  <td className="px-4 py-3" data-row-guard>
-                    <Checkbox checked={checked} onCheckedChange={() => toggleOne(k)} />
+                  <td className="px-4 py-3.5" data-row-guard>
+                    <Checkbox checked={checked} onCheckedChange={() => toggleOne(k)} aria-label="Select row" />
                   </td>
                   {columns.map((c) => (
-                    <td key={String(c.key)} className={cn("px-4 py-3 align-middle text-foreground", c.className)}>
+                    <td key={String(c.key)} className={cn("px-4 py-3.5 align-middle text-foreground text-xs md:text-sm font-normal", c.className)}>
                       {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key as string] ?? "—")}
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-right" data-row-guard>
+                  <td className="px-4 py-3.5 text-right" data-row-guard>
                     {rowActions && rowActions.length > 0 ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border border-border">
                           {rowActions
                             .filter((a) => !a.show || a.show(row))
                             .map((a, i) => (
@@ -427,7 +457,10 @@ export function DataTable<T>({
                                 {a.separatorBefore && i > 0 && <DropdownMenuSeparator />}
                                 <DropdownMenuItem
                                   onClick={() => a.onClick(row)}
-                                  className={a.destructive ? "text-destructive focus:text-destructive" : ""}
+                                  className={cn(
+                                    "cursor-pointer text-xs font-medium py-2",
+                                    a.destructive && "text-destructive focus:bg-destructive/10 focus:text-destructive",
+                                  )}
                                 >
                                   {a.icon && <a.icon className="mr-2 h-4 w-4" />}
                                   {a.label}
@@ -437,7 +470,7 @@ export function DataTable<T>({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
-                      <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground opacity-50"><MoreHorizontal className="h-4 w-4" /></Button>
                     )}
                   </td>
                 </tr>
@@ -447,17 +480,44 @@ export function DataTable<T>({
         </table>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground md:flex-row md:items-center">
+      {/* Pagination Footer */}
+      <div className="flex flex-col items-start justify-between gap-3 border-t border-white/60 dark:border-white/10 bg-white/40 dark:bg-white/5 px-5 py-3.5 text-xs text-muted-foreground md:flex-row md:items-center backdrop-blur-md">
         <div>
-          Showing <span className="font-medium text-foreground">{sorted.length === 0 ? 0 : start + 1}–{Math.min(start + pageSize, sorted.length)}</span> of <span className="font-medium text-foreground">{sorted.length}</span>
+          Showing <span className="font-semibold text-foreground font-mono">{sorted.length === 0 ? 0 : start + 1}–{Math.min(start + pageSize, sorted.length)}</span> of <span className="font-semibold text-foreground font-mono">{sorted.length}</span> records
         </div>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage === 1}
+            onClick={() => setPage(safePage - 1)}
+            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white"
+            title="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
-            <Button key={p} variant={p === safePage ? "default" : "outline"} size="sm" className="h-8 w-8 p-0" onClick={() => setPage(p)}>{p}</Button>
+            <Button
+              key={p}
+              variant={p === safePage ? "default" : "outline"}
+              size="sm"
+              className={cn("h-8 w-8 rounded-full p-0 text-xs font-semibold", p === safePage ? "bg-primary text-white shadow-xs" : "border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white")}
+              onClick={() => setPage(p)}
+            >
+              {p}
+            </Button>
           ))}
-          {totalPages > 5 && <span className="px-1">…</span>}
-          <Button variant="outline" size="sm" disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}><ChevronRight className="h-3.5 w-3.5" /></Button>
+          {totalPages > 5 && <span className="px-1 text-muted-foreground font-mono">…</span>}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage === totalPages}
+            onClick={() => setPage(safePage + 1)}
+            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white"
+            title="Next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

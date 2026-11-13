@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Store, Building2, CheckCircle2, Eye, Pencil, Ban, Play, Trash2, Network, AlertTriangle, Layers, PauseCircle, Sparkles } from "lucide-react";
+import { Plus, Store, Building2, CheckCircle2, Eye, Pencil, Ban, Play, Trash2, Network, AlertTriangle, Layers, PauseCircle, Sparkles, X } from "lucide-react";
 import { PageHeader } from "@/components/nexlock/PageHeader";
 import { KpiCard } from "@/components/nexlock/KpiCard";
 import { DataTable, type Column, type RowAction } from "@/components/nexlock/DataTable";
@@ -14,7 +14,7 @@ import { useCrudUi } from "@/lib/use-crud-ui";
 import { apiClient } from "@/lib/api-client";
 
 export const Route = createFileRoute("/dealers")({
-  head: () => ({ meta: [{ title: "Dealers — NexLock Admin" }] }),
+  head: () => ({ meta: [{ title: "Dealers — Nexus Console" }] }),
   component: DealersPage,
 });
 
@@ -40,8 +40,6 @@ interface DealerRow {
   enabledFeatures: string[];
 }
 
-// The full set of toggleable per-dealer feature keys — mirrors DEALER_FEATURE_KEYS in the
-// backend's dealer.validator.ts. Opt-in only: not available to any dealer until chosen here.
 const DEALER_FEATURE_KEYS = ["WALLPAPER_OVERLAY", "ALARM"] as const;
 const featureFields: FormField[] = [
   {
@@ -58,16 +56,8 @@ const featureFields: FormField[] = [
   },
 ];
 
-// distributor -> connector -> sub-connector. Mirrors MAX_DISTRIBUTOR_DEPTH in
-// dealer.service.ts — this is a display-only gate for the "Convert to Distributor" action; the
-// backend re-enforces the same cap on the actual PATCH, so getting this out of sync only ever
-// shows (or hides) the button incorrectly, it can't let a deeper chain actually get created.
 const MAX_DISTRIBUTOR_DEPTH = 3;
 
-// Walks distributorId pointers upward through the already-loaded dealer list to count how many
-// levels deep this dealer already is (0 = not a connector of anyone). allRows must contain every
-// ancestor for this to be accurate — true here since fetchDealers loads up to 1000 dealers in one
-// shot, effectively "all of them" for any tenant this admin panel manages today.
 function getDistributorDepth(row: DealerRow, allRows: DealerRow[]): number {
   let depth = 0;
   let currentId = row.distributorId;
@@ -274,79 +264,83 @@ function DealersPage() {
   };
 
   const cols: Column<DealerRow>[] = [
-    { key: "id", header: "Dealer ID", sortable: true, render: (r) => <span className="font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</span> },
+    {
+      key: "id",
+      header: "Dealer ID",
+      sortable: true,
+      render: (r) => <span className="font-mono text-xs font-semibold text-muted-foreground">{r.id.slice(0, 8)}</span>,
+    },
     {
       key: "name",
-      header: "Dealer",
+      header: "Dealer Name",
       sortable: true,
-      // Export (CSV/PDF) and column search both fall back to flattening this column's rendered
-      // JSX when there's no accessor — but this cell nests a name + badges + contact line three
-      // divs deep, past what that generic flattening can reach, so both silently produced an
-      // empty cell. accessor bypasses that entirely with the plain value it actually needs.
       accessor: (r) => r.name,
       render: (r) => (
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary"><Store className="h-4 w-4" /></div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium">{r.name}</span>
-            {r.isDistributor && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                <Network className="h-2.5 w-2.5" /> Distributor
-              </span>
-            )}
-            {r.distributorId && (
-              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">Connector</span>
-            )}
-            {r.androidEnrolledCount + r.iosEnrolledCount + r.androidAllocatedToConnectors + r.iosAllocatedToConnectors === 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">
-                <AlertTriangle className="h-2.5 w-2.5" /> Never enrolled
-              </span>
-            )}
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <Store className="h-4 w-4" />
           </div>
-          <div className="text-xs text-muted-foreground">{r.contact}</div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-semibold text-foreground text-xs md:text-sm">{r.name}</span>
+              {r.isDistributor && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  <Network className="h-2.5 w-2.5" /> Distributor
+                </span>
+              )}
+              {r.distributorId && (
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/80">
+                  Connector
+                </span>
+              )}
+              {r.androidEnrolledCount + r.iosEnrolledCount + r.androidAllocatedToConnectors + r.iosAllocatedToConnectors === 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-semibold text-warning-foreground border border-warning/30">
+                  <AlertTriangle className="h-2.5 w-2.5" /> Never enrolled
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">{r.contact} • {r.email}</div>
+          </div>
         </div>
-      </div>
-    )},
-    { key: "city", header: "Location", render: (r) => <span>{r.city}, {r.state}</span> },
+      ),
+    },
+    {
+      key: "city",
+      header: "Location",
+      render: (r) => <span className="text-xs font-medium text-foreground">{r.city}, {r.state}</span>,
+    },
     {
       key: "androidEnrollmentLimit",
       header: "Device Quota",
       className: "text-right",
-      // Same reason as the Dealer column's accessor above — this renders two nested lines
-      // (Android + iOS, each with a "used/limit (left) · to connectors" breakdown), well past
-      // what the generic export/search JSX-flattening can reach.
       accessor: (r) => {
         const androidUsed = r.androidEnrolledCount + r.androidAllocatedToConnectors;
         const iosUsed = r.iosEnrolledCount + r.iosAllocatedToConnectors;
         return `${androidUsed}/${r.androidEnrollmentLimit} Android, ${iosUsed}/${r.iosEnrollmentLimit} iOS`;
       },
       render: (r) => {
-        // "Used" includes quota already handed to connector dealers, not just this dealer's own
-        // enrolled devices — a distributor who's allocated 100 of their 500 to a connector but
-        // enrolled 0 devices themselves previously showed as "0/500 used" here, which wrongly
-        // implied all 500 were still free to give out. Mirrors the same total the backend's own
-        // enrollment-quota check and DistributorService.getPoolState use.
         const androidUsed = r.androidEnrolledCount + r.androidAllocatedToConnectors;
         const iosUsed = r.iosEnrolledCount + r.iosAllocatedToConnectors;
         const androidLeft = r.androidEnrollmentLimit - androidUsed;
         const iosLeft = r.iosEnrollmentLimit - iosUsed;
         return (
-          <div className="text-xs text-right">
-            <div>
-              {androidUsed}/{r.androidEnrollmentLimit} <span className="text-muted-foreground">Android</span>{" "}
-              <span className={androidLeft <= 0 ? "text-red-500" : "text-emerald-500"}>({androidLeft} left)</span>
-              {r.androidAllocatedToConnectors > 0 && (
-                <span className="text-muted-foreground"> · {r.androidAllocatedToConnectors} to connectors</span>
-              )}
+          <div className="text-xs text-right space-y-1">
+            <div className="flex items-center justify-end gap-1.5">
+              <span className="font-semibold text-foreground">{androidUsed}/{r.androidEnrollmentLimit}</span>
+              <span className="text-muted-foreground">Android</span>
+              <span className={`font-semibold ${androidLeft <= 0 ? "text-destructive" : "text-emerald-500"}`}>
+                ({androidLeft} left)
+              </span>
             </div>
-            <div>
-              {iosUsed}/{r.iosEnrollmentLimit} <span className="text-muted-foreground">iOS</span>{" "}
-              <span className={iosLeft <= 0 ? "text-red-500" : "text-emerald-500"}>({iosLeft} left)</span>
-              {r.iosAllocatedToConnectors > 0 && (
-                <span className="text-muted-foreground"> · {r.iosAllocatedToConnectors} to connectors</span>
-              )}
-            </div>
+            {r.iosEnrollmentLimit > 0 && (
+              <div className="flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground">
+                <span className="font-semibold text-foreground">{iosUsed}/{r.iosEnrollmentLimit}</span>
+                <span>iOS</span>
+                <span className={`font-semibold ${iosLeft <= 0 ? "text-destructive" : "text-emerald-500"}`}>
+                  ({iosLeft} left)
+                </span>
+              </div>
+            )}
           </div>
         );
       },
@@ -356,19 +350,15 @@ function DealersPage() {
   ];
 
   const actions: RowAction<DealerRow>[] = [
-    { label: "View", icon: Eye, onClick: (r) => ui.setViewRow(r) },
-    { label: "Edit", icon: Pencil, onClick: (r) => ui.setEditRow(r) },
+    { label: "View Details", icon: Eye, onClick: (r) => ui.setViewRow(r) },
+    { label: "Edit Dealer", icon: Pencil, onClick: (r) => ui.setEditRow(r) },
     { label: "Manage Features", icon: Sparkles, onClick: (r) => setFeaturesRow(r) },
-    { label: "Suspend", icon: Ban, onClick: (r) => setStatus(r, "suspended"), show: (r) => r.status !== "suspended" },
-    { label: "Activate", icon: Play, onClick: (r) => setStatus(r, "active"), show: (r) => r.status !== "active" },
+    { label: "Suspend Dealer", icon: Ban, onClick: (r) => setStatus(r, "suspended"), show: (r) => r.status !== "suspended" },
+    { label: "Activate Dealer", icon: Play, onClick: (r) => setStatus(r, "active"), show: (r) => r.status !== "active" },
     {
       label: "Convert to Distributor",
       icon: Network,
       onClick: (r) => setDistributorStatus(r, true),
-      // Mirrors the backend's depth cap (MAX_DISTRIBUTOR_DEPTH, dealer.service.ts): a connector
-      // CAN become a sub-distributor now, as long as doing so wouldn't exceed the max chain
-      // length. depth 0 (not a connector of anyone) or depth 1 (one level down) can still
-      // promote; depth 2 (already a sub-connector) cannot go deeper.
       show: (r) => !r.isDistributor && getDistributorDepth(r, items) < MAX_DISTRIBUTOR_DEPTH - 1,
       separatorBefore: true,
     },
@@ -378,7 +368,7 @@ function DealersPage() {
       onClick: (r) => setDistributorStatus(r, false),
       show: (r) => r.isDistributor,
     },
-    { label: "Delete", icon: Trash2, onClick: (r) => ui.setDeleteRow(r), destructive: true, separatorBefore: true },
+    { label: "Delete Dealer", icon: Trash2, onClick: (r) => ui.setDeleteRow(r), destructive: true, separatorBefore: true },
   ];
 
   const counts = {
@@ -387,11 +377,6 @@ function DealersPage() {
     pending: items.filter((d) => d.status === "pending").length,
   };
 
-  // "Ever enrolled" — androidEnrolledCount/iosEnrolledCount already count ENROLLED, Released, or
-  // any device with an enrolledAt timestamp (see dealer.service.ts#listDealers), not just
-  // currently-active enrollments, so zero here really means zero activity ever, not just right now.
-  // Also excludes distributors who've allocated quota to connectors but haven't enrolled any
-  // devices themselves — that quota isn't idle, it's just in use one level down.
   const zeroEnrollmentDealers = items.filter(
     (d) => d.androidEnrolledCount + d.iosEnrolledCount + d.androidAllocatedToConnectors + d.iosAllocatedToConnectors === 0
   );
@@ -400,43 +385,49 @@ function DealersPage() {
   const visibleItems = zeroEnrollmentOnly ? zeroEnrollmentDealers : items;
 
   return (
-    <div>
+    <div className="space-y-7 animate-fade-up">
       <PageHeader
-        title="Dealers"
-        description="Onboard dealers and set their device-enrollment quota."
-        breadcrumbs={[{ label: "Home", to: "/" }, { label: "Dealers" }]}
+        title="Dealer Network"
+        description="Onboard retail partner locations, allocate enrollment quotas, and configure feature policies."
+        breadcrumbs={[{ label: "Nexus", to: "/" }, { label: "Dealers" }]}
         actions={
-          <Button size="sm" className="gap-1.5" onClick={() => ui.setCreateOpen(true)}>
+          <Button size="sm" className="h-9 gap-1.5 text-xs font-semibold shadow-xs" onClick={() => ui.setCreateOpen(true)}>
             <Plus className="h-4 w-4" />Onboard Dealer
           </Button>
         }
       />
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <KpiCard label="Total Dealers" value={counts.total.toString()} icon={Store} />
-        <KpiCard label="Active" value={counts.active.toString()} icon={CheckCircle2} tone="success" />
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <KpiCard label="Total Dealers" value={counts.total.toString()} icon={Store} tone="primary" />
+        <KpiCard label="Active Partners" value={counts.active.toString()} icon={CheckCircle2} tone="success" />
         <KpiCard label="Pending KYC" value={counts.pending.toString()} icon={Building2} tone="warning" />
         <button
           type="button"
           onClick={() => setZeroEnrollmentOnly((v) => !v)}
-          className={`text-left rounded-xl transition-shadow ${zeroEnrollmentOnly ? "ring-2 ring-warning" : ""}`}
-          title={zeroEnrollmentOnly ? "Showing zero-enrollment dealers only — click to clear filter" : "Click to filter the table to zero-enrollment dealers"}
+          className={`text-left rounded-xl transition-all cursor-pointer ${
+            zeroEnrollmentOnly ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+          }`}
+          title={zeroEnrollmentOnly ? "Click to clear filter" : "Filter to zero-enrollment dealers"}
         >
-          <KpiCard label="Zero Enrollment" value={zeroEnrollmentDealers.length.toString()} icon={AlertTriangle} tone="warning" />
+          <KpiCard label="Zero Activity" value={zeroEnrollmentDealers.length.toString()} icon={AlertTriangle} tone="warning" />
         </button>
-        <KpiCard label="Total Quota Allocated" value={totalQuotaAllocated.toLocaleString()} icon={Layers} />
+        <KpiCard label="Total Quota" value={totalQuotaAllocated.toLocaleString()} icon={Layers} tone="primary" />
         <KpiCard label="Idle Quota" value={idleQuota.toLocaleString()} icon={PauseCircle} tone="warning" />
       </div>
 
       {zeroEnrollmentOnly && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span>Showing zero-enrollment dealers only ({zeroEnrollmentDealers.length})</span>
+        <div className="flex items-center justify-between rounded-xl border border-warning/30 bg-warning/10 px-4 py-2.5 text-xs text-warning-foreground animate-fade-in">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
+            <span className="font-semibold">Filtered: Showing dealers with zero device enrollments ({zeroEnrollmentDealers.length})</span>
+          </div>
           <button
             type="button"
             onClick={() => setZeroEnrollmentOnly(false)}
-            className="ml-auto text-xs font-medium underline underline-offset-2 hover:no-underline"
+            className="inline-flex items-center gap-1 font-bold underline hover:no-underline cursor-pointer"
           >
-            Clear filter
+            <X className="h-3 w-3" /> Clear filter
           </button>
         </div>
       )}
@@ -446,28 +437,29 @@ function DealersPage() {
         columns={cols}
         rowKey={(r) => r.id}
         loading={loading}
-        searchPlaceholder="Search dealers by name, ID, city…"
-        searchKeys={["name", "id", "city", "contact"]}
+        searchPlaceholder="Search dealers by name, ID, contact, city…"
+        searchKeys={["name", "id", "city", "contact", "email"]}
         rowActions={actions}
         onBulkDelete={(ids) => ui.setBulkDeleteIds(ids)}
         emptyTitle={zeroEnrollmentOnly ? "No zero-enrollment dealers" : "No dealers found"}
-        emptyDescription={zeroEnrollmentOnly ? "Every dealer has at least one enrollment or allocated connector quota." : "Onboard your first authorized dealer to start enrolling devices."}
-        emptyAction={<Button size="sm" onClick={() => ui.setCreateOpen(true)}><Plus className="mr-1.5 h-4 w-4" />Onboard Dealer</Button>}
+        emptyDescription={zeroEnrollmentOnly ? "Every dealer has active enrollments or assigned connector quotas." : "Onboard your first authorized dealer to begin allocating quotas."}
+        emptyAction={<Button size="sm" onClick={() => ui.setCreateOpen(true)} className="gap-1.5"><Plus className="h-4 w-4" />Onboard Dealer</Button>}
       />
 
       <CrudModal<any>
         open={ui.createOpen}
         onOpenChange={ui.setCreateOpen}
         title="Onboard New Dealer"
-        description="Creates the dealer record and its first dealer-app login together."
+        description="Creates the dealer store record and configures credentials for the Dealer mobile app."
         fields={createFields}
         onSubmit={onCreate}
         submitLabel="Onboard Dealer"
       />
+
       <CrudModal<any>
         open={!!ui.editRow}
         onOpenChange={(o) => !o && ui.setEditRow(null)}
-        title="Edit Dealer"
+        title="Edit Dealer Profile"
         description={ui.editRow?.name}
         fields={editFields}
         initial={ui.editRow ?? undefined}
@@ -478,8 +470,8 @@ function DealersPage() {
       <CrudModal<any>
         open={!!featuresRow}
         onOpenChange={(o) => !o && setFeaturesRow(null)}
-        title="Manage Features"
-        description={featuresRow ? `Choose which opt-in commands ${featuresRow.name} can use.` : undefined}
+        title="Manage Dealer Feature Policies"
+        description={featuresRow ? `Configure remote device actions permitted for ${featuresRow.name}.` : undefined}
         fields={featureFields}
         initial={
           featuresRow
@@ -487,30 +479,31 @@ function DealersPage() {
             : undefined
         }
         mode="edit"
-        submitLabel="Save Features"
+        submitLabel="Save Policy Settings"
         onSubmit={onSetFeatures}
       />
 
       <DetailsDialog
         open={!!ui.viewRow}
         onOpenChange={(o) => !o && ui.setViewRow(null)}
-        title={ui.viewRow?.name ?? ""}
-        subtitle={ui.viewRow?.id}
+        title={ui.viewRow?.name ?? "Dealer Details"}
+        subtitle={`Dealer ID: ${ui.viewRow?.id}`}
         fields={ui.viewRow ? [
           { label: "Contact Person", value: ui.viewRow.contact },
-          { label: "Status", value: <StatusBadge status={ui.viewRow.status} /> },
-          { label: "Email", value: ui.viewRow.email },
-          { label: "Phone", value: ui.viewRow.phone },
-          { label: "Location", value: `${ui.viewRow.city}, ${ui.viewRow.state}` },
-          { label: "Onboarded", value: ui.viewRow.joined },
-          { label: "Android Enrollment Limit", value: ui.viewRow.androidEnrollmentLimit.toLocaleString() },
-          { label: "iOS Enrollment Limit", value: ui.viewRow.iosEnrollmentLimit.toLocaleString() },
+          { label: "Operating Status", value: <StatusBadge status={ui.viewRow.status} /> },
+          { label: "Email Address", value: ui.viewRow.email },
+          { label: "Phone Number", value: ui.viewRow.phone },
+          { label: "Store Location", value: `${ui.viewRow.city}, ${ui.viewRow.state}` },
+          { label: "Onboarding Date", value: ui.viewRow.joined },
+          { label: "Android Enrollment Limit", value: `${ui.viewRow.androidEnrollmentLimit.toLocaleString()} units` },
+          { label: "iOS Enrollment Limit", value: `${ui.viewRow.iosEnrollmentLimit.toLocaleString()} units` },
+          { label: "Active Features", value: ui.viewRow.enabledFeatures.length > 0 ? ui.viewRow.enabledFeatures.join(", ") : "Standard Lock Only", colSpan: 2 },
         ] : []}
         footer={ui.viewRow && (
           <>
             <Button variant="outline" size="sm" onClick={() => ui.setViewRow(null)}>Close</Button>
             <Button size="sm" onClick={() => { const r = ui.viewRow!; ui.setViewRow(null); ui.setEditRow(r); }}>
-              <Pencil className="mr-1.5 h-4 w-4" />Edit
+              <Pencil className="mr-1.5 h-3.5 w-3.5" />Edit Profile
             </Button>
           </>
         )}
@@ -519,17 +512,18 @@ function DealersPage() {
       <ConfirmDialog
         open={!!ui.deleteRow}
         onOpenChange={(o) => !o && ui.setDeleteRow(null)}
-        title="Delete this dealer?"
-        description={ui.deleteRow ? `${ui.deleteRow.name} will be permanently removed. This cannot be undone.` : ""}
+        title="Delete Dealer Location?"
+        description={ui.deleteRow ? `The dealer "${ui.deleteRow.name}" and associated quota allocations will be permanently removed.` : ""}
         confirmLabel="Delete Dealer"
         onConfirm={() => { const r = ui.deleteRow!; removeDealer(r.id); ui.setDeleteRow(null); }}
       />
+
       <ConfirmDialog
         open={!!ui.bulkDeleteIds}
         onOpenChange={(o) => !o && ui.setBulkDeleteIds(null)}
         title={`Delete ${ui.bulkDeleteIds?.length ?? 0} dealers?`}
-        description="Selected dealers will be permanently removed."
-        confirmLabel="Delete All"
+        description="All selected dealer profiles will be permanently removed from the Nexus system."
+        confirmLabel="Delete All Selected"
         onConfirm={() => { const ids = ui.bulkDeleteIds!; removeManyDealers(ids); ui.setBulkDeleteIds(null); }}
       />
     </div>

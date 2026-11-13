@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useEffect, useState, useCallback } from "react";
 import {
-  Plus, Users, KeyRound, Eye, Pencil, Ban, Play, Trash2, LogOut, RefreshCw, Filter
+  Plus, Users, KeyRound, Eye, Pencil, Ban, Play, Trash2, LogOut, RefreshCw, Filter, ShieldCheck, Activity, Shield
 } from "lucide-react";
 import { PageHeader } from "@/components/nexlock/PageHeader";
 import { KpiCard } from "@/components/nexlock/KpiCard";
@@ -22,7 +22,7 @@ import { apiClient } from "@/lib/api-client";
 import { session } from "@/lib/session";
 
 export const Route = createFileRoute("/user-management")({
-  head: () => ({ meta: [{ title: "User Management — NexLock Admin" }] }),
+  head: () => ({ meta: [{ title: "User Management — Nexus Console" }] }),
   component: UsersPage,
 });
 
@@ -53,7 +53,7 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleString("en-IN", { 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium">{label}</Label>
+      <Label className="text-xs font-semibold text-foreground/90">{label}</Label>
       {children}
     </div>
   );
@@ -107,9 +107,6 @@ function UsersPage() {
 
   useEffect(() => {
     apiClient.get<any>("/roles?limit=100").then((r) => setRoles(r.data.items.map((x: any) => ({ id: x.id, name: x.name })))).catch(() => {});
-    // GET /dealers returns its list directly as `data` (not nested under `data.items` like
-    // /roles does) — this was silently throwing and getting swallowed by .catch(), leaving
-    // the "Assign Dealer" dropdown permanently empty.
     apiClient.get<any>("/dealers?limit=100").then((r) => setDealers(r.data.map((x: any) => ({ id: x.id, name: x.name })))).catch(() => {});
   }, []);
 
@@ -196,92 +193,111 @@ function UsersPage() {
 
   const cols: Column<AdminUser>[] = [
     {
-      key: "name", header: "User", sortable: true, render: (r) => (
+      key: "name",
+      header: "Administrator",
+      sortable: true,
+      render: (r) => (
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials(r.name)}</AvatarFallback>
+          <Avatar className="h-9 w-9 border border-border/80 ring-2 ring-primary/10">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+              {initials(r.name)}
+            </AvatarFallback>
           </Avatar>
-          <div>
-            <div className="font-medium">{r.name}</div>
+          <div className="min-w-0">
+            <div className="font-semibold text-foreground text-xs md:text-sm">{r.name}</div>
             <div className="text-xs text-muted-foreground">{r.email}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
-      key: "role", header: "Role", render: (r) => (
-        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">{r.role}</span>
-      )
+      key: "role",
+      header: "Role Definition",
+      render: (r) => (
+        <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-2.5 py-1 text-xs font-semibold text-foreground">
+          <Shield className="h-3 w-3 text-primary" />
+          {r.role}
+        </span>
+      ),
     },
     {
-      key: "dealerName", header: "Dealer", render: (r) => (
-        <span className="text-sm text-muted-foreground">{r.dealerName || "—"}</span>
-      )
+      key: "dealerName",
+      header: "Assigned Dealership",
+      render: (r) => (
+        <span className="text-xs font-medium text-foreground">{r.dealerName || "Global (All Stores)"}</span>
+      ),
     },
     { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
     {
-      key: "lastActiveAt", header: "Last Active", sortable: true, render: (r) => (
-        <span className="text-sm text-muted-foreground">{r.lastActiveAt ? fmtDate(r.lastActiveAt) : "Never"}</span>
-      )
+      key: "lastActiveAt",
+      header: "Last Activity",
+      sortable: true,
+      render: (r) => (
+        <span className="text-xs font-medium text-muted-foreground">{r.lastActiveAt ? fmtDate(r.lastActiveAt) : "Never Logged In"}</span>
+      ),
     },
   ];
 
   const actions: RowAction<AdminUser>[] = [
-    { label: "View Details", icon: Eye, onClick: openView },
-    { label: "Edit", icon: Pencil, onClick: openEdit },
+    { label: "View User Details", icon: Eye, onClick: openView },
+    { label: "Edit Account", icon: Pencil, onClick: openEdit },
     { label: "Reset Password", icon: KeyRound, onClick: (r) => { setResetPwd(""); setResetUser(r); } },
     { label: "Force Logout", icon: LogOut, onClick: (r) => setForceLogoutUser(r) },
-    { label: "Disable", icon: Ban, onClick: (r) => quickStatus(r, "disabled"), show: (r) => r.status === "active" },
-    { label: "Enable", icon: Play, onClick: (r) => quickStatus(r, "active"), show: (r) => r.status !== "active" },
-    { label: "Delete", icon: Trash2, onClick: (r) => setDeleteUser(r), destructive: true, separatorBefore: true, show: (r) => r.id !== currentUser?.userId },
+    { label: "Disable Account", icon: Ban, onClick: (r) => quickStatus(r, "disabled"), show: (r) => r.status === "active" },
+    { label: "Enable Account", icon: Play, onClick: (r) => quickStatus(r, "active"), show: (r) => r.status !== "active" },
+    { label: "Delete User", icon: Trash2, onClick: (r) => setDeleteUser(r), destructive: true, separatorBefore: true, show: (r) => r.id !== currentUser?.userId },
   ];
 
   const active = items.filter((u) => u.status === "active").length;
 
   return (
-    <div>
+    <div className="space-y-7 animate-fade-up">
       <PageHeader
         title="User Management"
-        description="Manage admin users, roles, and access sessions."
-        breadcrumbs={[{ label: "Home", to: "/" }, { label: "User Management" }]}
+        description="Oversee administrative accounts, role assignments, and active workstation sessions."
+        breadcrumbs={[{ label: "Nexus", to: "/" }, { label: "User Management" }]}
         actions={
-          <Button size="sm" className="gap-1.5" onClick={() => { setForm({ name: "", email: "", password: "", roleId: "", dealerId: "", status: "active" }); setCreateOpen(true); }}>
-            <Plus className="h-4 w-4" />Add User
+          <Button
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold shadow-xs"
+            onClick={() => { setForm({ name: "", email: "", password: "", roleId: "", dealerId: "", status: "active" }); setCreateOpen(true); }}
+          >
+            <Plus className="h-4 w-4" />Add Admin User
           </Button>
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <KpiCard label="Total Users" value={total.toString()} icon={Users} />
-        <KpiCard label="Active Users" value={active.toString()} icon={Play} tone="success" />
-        <KpiCard label="Roles Defined" value={roles.length.toString()} icon={KeyRound} />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <KpiCard label="Total Admin Users" value={total.toString()} sub="Platform operators" icon={Users} tone="primary" />
+        <KpiCard label="Active Accounts" value={active.toString()} sub="Authorized sign-ins" icon={Play} tone="success" />
+        <KpiCard label="Defined Roles" value={roles.length.toString()} sub="Access tier catalog" icon={KeyRound} tone="primary" />
       </div>
 
-      {/* Filters */}
-      <div className="mb-4 flex flex-wrap gap-3">
+      {/* Filter and Search Bar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/80 bg-card p-3.5 shadow-xs">
         <Input
-          placeholder="Search users…"
+          placeholder="Search by name, email, or role…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 w-56"
+          className="h-9 w-full sm:w-64 text-xs bg-muted/30 border-border/70"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-9 w-36"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="disabled">Disabled</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
+          <SelectTrigger className="h-9 w-36 text-xs bg-muted/30 border-border/70"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent className="rounded-xl border-border shadow-xl">
+            <SelectItem value="all" className="text-xs">All Statuses</SelectItem>
+            <SelectItem value="active" className="text-xs">Active Only</SelectItem>
+            <SelectItem value="disabled" className="text-xs">Disabled</SelectItem>
+            <SelectItem value="pending" className="text-xs">Pending</SelectItem>
           </SelectContent>
         </Select>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Role" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            {roles.map((r) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+          <SelectTrigger className="h-9 w-44 text-xs bg-muted/30 border-border/70"><SelectValue placeholder="Role" /></SelectTrigger>
+          <SelectContent className="rounded-xl border-border shadow-xl">
+            <SelectItem value="all" className="text-xs font-semibold">All Roles</SelectItem>
+            {roles.map((r) => <SelectItem key={r.id} value={r.id} className="text-xs">{r.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" onClick={load} className="h-9 gap-1.5">
+        <Button variant="outline" size="sm" onClick={load} className="h-9 gap-1.5 text-xs font-medium border-border/80">
           <RefreshCw className="h-3.5 w-3.5" />Refresh
         </Button>
       </div>
@@ -291,166 +307,192 @@ function UsersPage() {
         columns={cols}
         rowKey={(r) => r.id}
         loading={loading}
-        searchPlaceholder="Search users…"
+        searchPlaceholder="Search administrators…"
         searchKeys={["name", "email", "role"]}
         rowActions={actions}
-        emptyTitle="No users found"
-        emptyDescription="Add your first admin user to get started."
+        emptyTitle="No administrator accounts found"
+        emptyDescription="Add your first administrator to grant console permissions."
       />
 
-      {/* Create User Modal */}
+      {/* CREATE USER MODAL */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="border-b border-border px-6 py-4">
-            <DialogTitle>Add User</DialogTitle>
-            <DialogDescription>Create a new admin user account.</DialogDescription>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
+          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+            <DialogTitle className="text-base font-bold text-foreground">Add New Administrator</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">Provision a new staff account with granular role permissions.</DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField label="Full Name *">
-                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Rohan Agarwal" />
+                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Rohan Agarwal" className="h-9 text-xs bg-muted/20 border-border/80" />
               </FormField>
-              <FormField label="Email *">
-                <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="rohan@nexlock.io" />
+              <FormField label="Email Address *">
+                <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="rohan@nexus.io" className="h-9 text-xs bg-muted/20 border-border/80" />
               </FormField>
             </div>
-            <FormField label="Password *">
-              <Input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" />
+            <FormField label="Initial Password *">
+              <Input type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" className="h-9 text-xs bg-muted/20 border-border/80" />
             </FormField>
             <div className="grid grid-cols-2 gap-4">
               <FormField label="Role *">
                 <Select value={form.roleId} onValueChange={(v) => setForm((f) => ({ ...f, roleId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
-                  <SelectContent>
-                    {roles.map((r) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                  <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/80"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-border shadow-xl">
+                    {roles.map((r) => <SelectItem key={r.id} value={r.id} className="text-xs">{r.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </FormField>
               <FormField label="Status">
                 <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
+                  <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/80"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-border shadow-xl">
+                    <SelectItem value="active" className="text-xs">Active</SelectItem>
+                    <SelectItem value="pending" className="text-xs">Pending</SelectItem>
+                    <SelectItem value="disabled" className="text-xs">Disabled</SelectItem>
                   </SelectContent>
                 </Select>
               </FormField>
             </div>
-            <FormField label="Assign Dealer (Optional)">
+            <FormField label="Restrict to Dealer Store (Optional)">
               <Select value={form.dealerId || "none"} onValueChange={(v) => setForm((f) => ({ ...f, dealerId: v === "none" ? "" : v }))}>
-                <SelectTrigger><SelectValue placeholder="No dealer" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No dealer</SelectItem>
-                  {dealers.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/80"><SelectValue placeholder="No dealer restriction (Global)" /></SelectTrigger>
+                <SelectContent className="rounded-xl border-border shadow-xl">
+                  <SelectItem value="none" className="text-xs font-semibold">No dealer restriction (Global Access)</SelectItem>
+                  {dealers.map((d) => <SelectItem key={d.id} value={d.id} className="text-xs">{d.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormField>
           </div>
-          <DialogFooter className="border-t border-border px-6 py-3">
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={saving}>{saving ? "Creating…" : "Create User"}</Button>
+          <DialogFooter className="border-t border-border/80 px-6 py-3.5 bg-muted/20 gap-2">
+            <Button variant="outline" size="sm" onClick={() => setCreateOpen(false)} className="text-xs">Cancel</Button>
+            <Button size="sm" onClick={handleCreate} disabled={saving} className="text-xs font-semibold shadow-xs">
+              {saving ? "Creating…" : "Create User"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Edit User Modal */}
+      {/* EDIT USER MODAL */}
       <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="border-b border-border px-6 py-4">
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>{editUser?.email}</DialogDescription>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
+          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+            <DialogTitle className="text-base font-bold text-foreground">Edit User Profile</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">{editUser?.email}</DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField label="Full Name">
-                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+                <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="h-9 text-xs bg-muted/20 border-border/80" />
               </FormField>
-              <FormField label="Email">
-                <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+              <FormField label="Email Address">
+                <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="h-9 text-xs bg-muted/20 border-border/80" />
               </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Role">
+              <FormField label="Role Assignment">
                 <Select value={form.roleId} onValueChange={(v) => setForm((f) => ({ ...f, roleId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
-                  <SelectContent>
-                    {roles.map((r) => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                  <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/80"><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-border shadow-xl">
+                    {roles.map((r) => <SelectItem key={r.id} value={r.id} className="text-xs">{r.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </FormField>
               <FormField label="Status">
                 <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
+                  <SelectTrigger className="h-9 text-xs bg-muted/20 border-border/80"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-border shadow-xl">
+                    <SelectItem value="active" className="text-xs">Active</SelectItem>
+                    <SelectItem value="pending" className="text-xs">Pending</SelectItem>
+                    <SelectItem value="disabled" className="text-xs">Disabled</SelectItem>
                   </SelectContent>
                 </Select>
               </FormField>
             </div>
           </div>
-          <DialogFooter className="border-t border-border px-6 py-3">
-            <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
-            <Button onClick={handleEdit} disabled={saving}>{saving ? "Saving…" : "Save Changes"}</Button>
+          <DialogFooter className="border-t border-border/80 px-6 py-3.5 bg-muted/20 gap-2">
+            <Button variant="outline" size="sm" onClick={() => setEditUser(null)} className="text-xs">Cancel</Button>
+            <Button size="sm" onClick={handleEdit} disabled={saving} className="text-xs font-semibold shadow-xs">
+              {saving ? "Saving…" : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* View User Details Modal */}
+      {/* VIEW USER DETAILS MODAL */}
       <Dialog open={!!viewUser} onOpenChange={(o) => !o && setViewUser(null)}>
-        <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="border-b border-border px-6 py-4">
+        <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
+          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">{viewUser ? initials(viewUser.name) : ""}</AvatarFallback>
+              <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">{viewUser ? initials(viewUser.name) : ""}</AvatarFallback>
               </Avatar>
               <div>
-                <DialogTitle>{viewUser?.name}</DialogTitle>
-                <DialogDescription className="text-xs">{viewUser?.email}</DialogDescription>
+                <DialogTitle className="text-base font-bold text-foreground">{viewUser?.name}</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">{viewUser?.email}</DialogDescription>
               </div>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] font-semibold uppercase text-muted-foreground">Role</div>
-                <div className="mt-1 text-sm font-medium">{viewUser?.role}</div>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Assigned Role</div>
+                <div className="mt-1 text-xs font-semibold text-foreground">{viewUser?.role}</div>
               </div>
-              <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] font-semibold uppercase text-muted-foreground">Status</div>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Status</div>
                 <div className="mt-1"><StatusBadge status={viewUser?.status || ""} /></div>
               </div>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active Sessions</div>
+                <div className="mt-1 text-xs font-bold text-foreground font-mono">
+                  {viewUser?.sessions?.filter(s => !s.isRevoked).length ?? 0}
+                </div>
+              </div>
             </div>
+
             <div>
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Active Sessions ({viewUser?.sessions?.filter(s => !s.isRevoked).length ?? 0})</div>
+              <div className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5" /> Active Workstation Sessions ({viewUser?.sessions?.filter(s => !s.isRevoked).length ?? 0})
+              </div>
               <div className="space-y-2">
                 {viewUser?.sessions?.filter(s => !s.isRevoked).slice(0, 5).map((s) => (
-                  <div key={s.id} className="rounded-lg border border-border p-3 text-xs">
-                    <div className="font-medium truncate">{s.userAgent}</div>
-                    <div className="text-muted-foreground mt-0.5">{s.ipAddress} · Started {fmtDate(s.createdAt)}</div>
+                  <div key={s.id} className="rounded-xl border border-border/60 bg-muted/20 p-3 text-xs">
+                    <div className="font-semibold text-foreground truncate">{s.userAgent}</div>
+                    <div className="text-muted-foreground mt-1 flex items-center gap-2">
+                      <span className="font-mono">{s.ipAddress}</span>
+                      <span>•</span>
+                      <span>Started: {fmtDate(s.createdAt)}</span>
+                    </div>
                   </div>
                 ))}
                 {!viewUser?.sessions?.filter(s => !s.isRevoked).length && (
-                  <div className="text-xs text-muted-foreground">No active sessions</div>
+                  <div className="text-xs text-muted-foreground/70 italic p-3 text-center border border-dashed border-border rounded-xl">
+                    No active sessions currently open.
+                  </div>
                 )}
               </div>
             </div>
+
             <div>
-              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Login History</div>
+              <div className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5" /> Recent Sign-In Attempts
+              </div>
               <div className="space-y-2">
-                {viewUser?.loginHistories?.map((h) => (
-                  <div key={h.id} className="flex items-center justify-between rounded-lg border border-border p-3 text-xs">
+                {viewUser?.loginHistories?.slice(0, 5).map((h) => (
+                  <div key={h.id} className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-3 text-xs">
                     <div>
-                      <div className="font-medium">{h.ipAddress}</div>
-                      <div className="text-muted-foreground">{fmtDate(h.createdAt)}</div>
+                      <div className="font-mono font-semibold text-foreground">{h.ipAddress}</div>
+                      <div className="text-[11px] text-muted-foreground">{fmtDate(h.createdAt)}</div>
                     </div>
-                    <Badge variant={h.status === "success" ? "default" : "destructive"} className="text-[10px]">{h.status}</Badge>
+                    <Badge variant={h.status === "success" ? "default" : "destructive"} className="text-[10px] font-bold">
+                      {h.status}
+                    </Badge>
                   </div>
                 ))}
                 {!viewUser?.loginHistories?.length && (
-                  <div className="text-xs text-muted-foreground">No login history</div>
+                  <div className="text-xs text-muted-foreground/70 italic p-3 text-center border border-dashed border-border rounded-xl">
+                    No previous sign-in records.
+                  </div>
                 )}
               </div>
             </div>
@@ -458,41 +500,50 @@ function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Reset Password Modal */}
+      {/* RESET PASSWORD MODAL */}
       <Dialog open={!!resetUser} onOpenChange={(o) => !o && setResetUser(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm rounded-2xl border-border/80 shadow-2xl p-6 bg-card">
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>Set a new password for {resetUser?.name}. They will be logged out of all sessions.</DialogDescription>
+            <DialogTitle className="text-base font-bold text-foreground">Reset Password</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Define a new password for {resetUser?.name}. All existing active sessions will be terminated immediately.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Label className="text-xs font-medium">New Password</Label>
-            <Input type="password" placeholder="Min 6 characters" value={resetPwd} onChange={(e) => setResetPwd(e.target.value)} />
+          <div className="space-y-3 py-3">
+            <Label className="text-xs font-semibold text-foreground">New Access Password</Label>
+            <Input
+              type="password"
+              placeholder="Min 6 characters"
+              value={resetPwd}
+              onChange={(e) => setResetPwd(e.target.value)}
+              className="h-9 text-xs bg-muted/20 border-border/80"
+              autoFocus
+            />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setResetUser(null)}>Cancel</Button>
-            <Button onClick={handleResetPassword} disabled={saving || !resetPwd}>{saving ? "Resetting…" : "Reset Password"}</Button>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setResetUser(null)} className="text-xs">Cancel</Button>
+            <Button size="sm" onClick={handleResetPassword} disabled={saving || !resetPwd} className="text-xs font-semibold">
+              {saving ? "Resetting…" : "Confirm Password Reset"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Force Logout Confirm */}
       <ConfirmDialog
         open={!!forceLogoutUser}
         onOpenChange={(o) => !o && setForceLogoutUser(null)}
-        title="Force logout?"
-        description={`${forceLogoutUser?.name} will be signed out of all active sessions immediately.`}
+        title="Force Session Termination?"
+        description={`${forceLogoutUser?.name} will be immediately signed out across all workstations and browser sessions.`}
         onConfirm={handleForceLogout}
-        confirmLabel="Force Logout"
+        confirmLabel="Revoke All Sessions"
         destructive
       />
 
-      {/* Delete Confirm */}
       <ConfirmDialog
         open={!!deleteUser}
         onOpenChange={(o) => !o && setDeleteUser(null)}
-        title="Delete this user?"
-        description={`${deleteUser?.name} will permanently lose access to the platform.`}
+        title="Revoke Administrator Account?"
+        description={`The account for "${deleteUser?.name}" will be deleted. Access tokens will be revoked immediately.`}
         onConfirm={handleDelete}
         confirmLabel="Delete User"
         destructive

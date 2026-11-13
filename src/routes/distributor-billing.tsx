@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Smartphone, Apple, Wallet, Store } from "lucide-react";
+import { Smartphone, Apple, Wallet, Store, Calendar, ArrowRight, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/nexlock/PageHeader";
 import { KpiCard } from "@/components/nexlock/KpiCard";
 import { DataTable, type Column } from "@/components/nexlock/DataTable";
@@ -37,10 +37,6 @@ interface BillingResponse {
 const fmtInr = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
-// `<input type="date">` gives a bare "YYYY-MM-DD" string that `new Date(...)` parses as UTC
-// midnight, not local midnight — the same off-by-almost-a-day gotcha already fixed in
-// analytics.tsx's localDayBoundary. Mirrored here rather than shared since each file owns its
-// own tiny date-filter state and this is the only place either needs it.
 function localDayBoundary(dateStr: string, edge: "start" | "end"): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
   return edge === "start" ? new Date(year, month - 1, day, 0, 0, 0, 0) : new Date(year, month - 1, day, 23, 59, 59, 999);
@@ -114,110 +110,138 @@ function DistributorBillingPage() {
       key: "name",
       header: "Connector Dealer",
       sortable: true,
-      // accessor: DataTable's CSV/PDF export can only read a plain value or a single flat
-      // text node out of `render` — it can't walk a nested <div> tree, so without this every
-      // multi-line cell (this one, Android, iOS below) exported blank, leaving only the
-      // single-<span> "Bill Amount" column with real data in the export.
       accessor: (r) => `${r.name} (${r.code}, ${r.city}, ${r.state})`,
       render: (r) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary"><Store className="h-4 w-4" /></div>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <Store className="h-4 w-4" />
+          </div>
           <div>
-            <div className="font-medium">{r.name}</div>
-            <div className="text-xs text-muted-foreground">{r.code} · {r.city}, {r.state}</div>
+            <div className="font-semibold text-foreground text-xs md:text-sm">{r.name}</div>
+            <div className="text-xs text-muted-foreground">{r.code} • {r.city}, {r.state}</div>
           </div>
         </div>
       ),
     },
     {
       key: "androidUsed",
-      header: "Android",
+      header: "Android Units",
       className: "text-right",
       sortable: true,
       accessor: (r) => `${r.androidUsed} devices (${fmtInr(r.androidAmount)})`,
       render: (r) => (
-        <div className="text-right text-xs">
-          <div className="font-medium text-foreground">{r.androidUsed.toLocaleString()} devices</div>
-          <div className="text-muted-foreground">{fmtInr(r.androidAmount)}</div>
+        <div className="text-right text-xs space-y-0.5">
+          <div className="font-bold text-foreground">{r.androidUsed.toLocaleString()} devices</div>
+          <div className="text-muted-foreground font-mono">{fmtInr(r.androidAmount)}</div>
         </div>
       ),
     },
     {
       key: "iosUsed",
-      header: "iOS",
+      header: "iOS Units",
       className: "text-right",
       sortable: true,
       accessor: (r) => `${r.iosUsed} devices (${fmtInr(r.iosAmount)})`,
       render: (r) => (
-        <div className="text-right text-xs">
-          <div className="font-medium text-foreground">{r.iosUsed.toLocaleString()} devices</div>
-          <div className="text-muted-foreground">{fmtInr(r.iosAmount)}</div>
+        <div className="text-right text-xs space-y-0.5">
+          <div className="font-bold text-foreground">{r.iosUsed.toLocaleString()} devices</div>
+          <div className="text-muted-foreground font-mono">{fmtInr(r.iosAmount)}</div>
         </div>
       ),
     },
     {
       key: "amount",
-      header: "Bill Amount",
+      header: "Invoice Subtotal",
       className: "text-right",
       sortable: true,
       accessor: (r) => fmtInr(r.amount),
-      render: (r) => <span className="font-semibold text-foreground">{fmtInr(r.amount)}</span>,
+      render: (r) => (
+        <span className="font-mono font-bold text-foreground text-xs md:text-sm bg-muted/40 px-2 py-1 rounded-md border border-border/80">
+          {fmtInr(r.amount)}
+        </span>
+      ),
     },
   ];
 
   return (
-    <div>
+    <div className="space-y-7 animate-fade-up">
       <PageHeader
-        title="Billing"
-        description="What each connector owes for devices they enrolled in the selected period."
-        breadcrumbs={[{ label: "Home", to: "/distributor" }, { label: "Billing" }]}
+        title="Distributor Settlement & Billing"
+        description="Calculate connector dealer enrollment consumption and invoice charges over billing cycles."
+        breadcrumbs={[{ label: "Portal", to: "/distributor" }, { label: "Billing" }]}
       />
 
-      {/* Filters — one row, above everything they scope, date range first, matching the
-          dataviz skill's filter composition rule (same layout as /analytics). */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="date"
-            value={from}
-            max={to}
-            onChange={(e) => setFrom(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2.5 text-sm text-foreground"
-          />
-          <span>to</span>
-          <input
-            type="date"
-            value={to}
-            min={from}
-            onChange={(e) => setTo(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2.5 text-sm text-foreground"
-          />
-        </div>
-        <Button size="sm" onClick={() => fetchBilling(from, to)} disabled={loading}>Apply</Button>
-        <div className="flex flex-wrap gap-1.5">
-          {presets.map((p) => (
-            <Button key={p.label} size="sm" variant="outline" onClick={() => applyPreset(p.range())}>{p.label}</Button>
-          ))}
+      {/* Date Filter & Presets Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-xl">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 rounded-full border border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 px-3.5 py-1.5 text-xs text-muted-foreground shadow-xs">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="date"
+              value={from}
+              max={to}
+              onChange={(e) => setFrom(e.target.value)}
+              className="bg-transparent text-xs text-foreground focus:outline-none"
+            />
+            <span className="text-muted-foreground/50">to</span>
+            <input
+              type="date"
+              value={to}
+              min={from}
+              onChange={(e) => setTo(e.target.value)}
+              className="bg-transparent text-xs text-foreground focus:outline-none"
+            />
+          </div>
+          <Button
+            size="sm"
+            onClick={() => fetchBilling(from, to)}
+            disabled={loading}
+            className="h-8.5 text-xs font-semibold shadow-xs"
+          >
+            {loading && <RefreshCw className="h-3 w-3 animate-spin mr-1.5" />}
+            Calculate Invoice
+          </Button>
+
+          <div className="hidden h-5 w-px bg-border/80 sm:block" />
+
+          <div className="flex flex-wrap gap-1.5">
+            {presets.map((p) => (
+              <Button
+                key={p.label}
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs font-medium border-border/80 hover:bg-muted"
+                onClick={() => applyPreset(p.range())}
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* KPI Billing Totals */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
           label="Android Devices Billed"
           value={data ? data.totals.androidUsed.toLocaleString() : loading ? "—" : "0"}
-          sub={data ? `@ ${fmtInr(data.rates.android)}/device` : undefined}
+          sub={data ? `@ ${fmtInr(data.rates.android)} per unit fee` : undefined}
           icon={Smartphone}
+          tone="primary"
         />
         <KpiCard
           label="iOS Devices Billed"
           value={data ? data.totals.iosUsed.toLocaleString() : loading ? "—" : "0"}
-          sub={data ? `@ ${fmtInr(data.rates.ios)}/device` : undefined}
+          sub={data ? `@ ${fmtInr(data.rates.ios)} per unit fee` : undefined}
           icon={Apple}
+          tone="success"
         />
         <KpiCard
-          label="Total Bill"
+          label="Gross Invoice Total"
           value={data ? fmtInr(data.totals.amount) : loading ? "—" : fmtInr(0)}
+          sub="All connector charges combined"
           icon={Wallet}
+          tone="primary"
         />
       </div>
 
@@ -226,10 +250,10 @@ function DistributorBillingPage() {
         columns={cols}
         rowKey={(r) => r.id}
         loading={loading}
-        searchPlaceholder="Search connector dealers…"
+        searchPlaceholder="Search connector dealers by name, code or city…"
         searchKeys={["name", "code", "city"]}
-        emptyTitle="No usage in this period"
-        emptyDescription="No connector enrolled a device in the selected date range."
+        emptyTitle="No usage in this billing period"
+        emptyDescription="No connector store enrolled a financed device within the specified calendar interval."
       />
     </div>
   );
