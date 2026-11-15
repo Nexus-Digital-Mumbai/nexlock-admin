@@ -20,8 +20,8 @@ interface Analytics {
   ios: { totalEnrolled: number; trend: TrendPoint[] };
 }
 
-const ANDROID_COLOR = "#2563EB";
-const IOS_COLOR = "#10B981";
+const ANDROID_COLOR = "#1265D8";
+const IOS_COLOR = "#08BFEA";
 
 function monthLabel(ym: string): string {
   const [y, m] = ym.split("-").map(Number);

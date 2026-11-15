@@ -127,11 +127,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex h-20 items-center justify-between border-b border-white/60 dark:border-white/10 px-5">
           {collapsed ? (
             <div className="mx-auto">
-              <Logo showWordmark={false} />
+              <Logo size="md" withPulse={true} />
             </div>
           ) : (
             <div className="flex items-center">
-              <Logo />
+              <Logo size="md" />
             </div>
           )}
           <button
@@ -160,8 +160,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                   "group relative flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200",
                   active
-                    ? "bg-[#E5E1FE] dark:bg-indigo-600/30 text-[#252066] dark:text-indigo-200 font-semibold shadow-xs border border-white/80 dark:border-white/15"
-                    : "text-[#555C7A] dark:text-slate-300 hover:bg-white/55 dark:hover:bg-white/10 hover:text-[#181B34] dark:hover:text-white",
+                    ? "bg-[#EDE9FE] dark:bg-blue-950/40 text-[#071D62] dark:text-blue-200 font-semibold shadow-xs border border-white/90 dark:border-white/15"
+                    : "text-[#555C7A] dark:text-slate-300 hover:bg-white/55 dark:hover:bg-white/10 hover:text-[#071D62] dark:hover:text-white",
                   collapsed && "justify-center px-0 h-11 w-11 mx-auto rounded-xl",
                 )}
               >
@@ -169,15 +169,18 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className={cn(
                     "h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-105",
                     active
-                      ? "text-[#4338CA] dark:text-indigo-400"
-                      : "text-[#6B7280] dark:text-slate-400 group-hover:text-[#181B34] dark:group-hover:text-white"
+                      ? "text-[#1265D8] dark:text-blue-400"
+                      : "text-[#6B7280] dark:text-slate-400 group-hover:text-[#071D62] dark:group-hover:text-white"
                   )}
                 />
                 {!collapsed && (
                   <span className="flex-1 truncate tracking-tight text-[13.5px]">{item.label}</span>
                 )}
                 {active && !collapsed && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#4338CA] dark:bg-indigo-400 animate-pulse" />
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#08BFEA] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1265D8]" />
+                  </span>
                 )}
               </Link>
             );
@@ -201,7 +204,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </p>
               <Link
                 to="/devices"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1C30] dark:bg-primary px-3 py-1.5 text-[11px] font-semibold text-white shadow-xs hover:bg-[#282B48] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#071D62] dark:bg-primary px-3 py-1.5 text-[11px] font-semibold text-white shadow-xs hover:bg-[#1265D8] transition-all"
               >
                 <span>Learn More</span>
                 <ArrowRight className="h-3 w-3" />
@@ -292,11 +295,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className={cn(
                       "flex items-center gap-3.5 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                       active
-                        ? "bg-[#E5E1FE] text-[#252066] font-semibold shadow-xs"
+                        ? "bg-[#EDE9FE] text-[#071D62] font-semibold shadow-xs"
                         : "text-[#555C7A] hover:bg-white/60",
                     )}
                   >
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className={cn("h-5 w-5", active ? "text-[#1265D8]" : "text-[#6B7280]")} />
                     <span>{item.label}</span>
                   </Link>
                 );

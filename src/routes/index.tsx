@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
 import {
   Store,
   Smartphone,
@@ -44,14 +44,11 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
-// Spline trend data for the Device Analytics card matching the reference design
-const splineData = [
-  { date: "Oct 10", enrolled: 2200, locked: 1200, released: 700 },
-  { date: "Oct 17", enrolled: 3100, locked: 1700, released: 1000 },
-  { date: "Oct 24", enrolled: 4300, locked: 2200, released: 1400 },
-  { date: "Oct 31", enrolled: 6400, locked: 3100, released: 2100 },
-  { date: "Nov 09", enrolled: 5200, locked: 2800, released: 1900 },
-];
+function formatNumberVal(val: any) {
+  const num = Number(val) || 0;
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return String(num);
+}
 
 function CustomChartTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
@@ -64,19 +61,19 @@ function CustomChartTooltip({ active, payload, label }: any) {
           <span className="flex items-center gap-1.5 font-medium">
             <span className="h-2 w-2 rounded-full bg-[#8B5CF6]" /> Enrolled
           </span>
-          <span className="font-bold font-mono">{(payload[0]?.value / 1000).toFixed(1)}K</span>
+          <span className="font-bold font-mono">{formatNumberVal(payload[0]?.value)}</span>
         </div>
         <div className="flex items-center justify-between text-[#1E1B4B] dark:text-indigo-300">
           <span className="flex items-center gap-1.5 font-medium">
             <span className="h-2 w-2 rounded-full bg-[#1E1B4B] dark:bg-indigo-300" /> Locked
           </span>
-          <span className="font-bold font-mono">{(payload[1]?.value / 1000).toFixed(1)}K</span>
+          <span className="font-bold font-mono">{formatNumberVal(payload[1]?.value)}</span>
         </div>
         <div className="flex items-center justify-between text-[#A78BFA]">
           <span className="flex items-center gap-1.5 font-medium">
             <span className="h-2 w-2 rounded-full bg-[#A78BFA]" /> Released
           </span>
-          <span className="font-bold font-mono">{(payload[2]?.value / 1000).toFixed(1)}K</span>
+          <span className="font-bold font-mono">{formatNumberVal(payload[2]?.value)}</span>
         </div>
       </div>
     );
@@ -84,33 +81,259 @@ function CustomChartTooltip({ active, payload, label }: any) {
   return null;
 }
 
+function formatRelativeTime(dateStr?: string | Date) {
+  if (!dateStr) return "Just now";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function generateDynamicTimeAxis(range: string) {
+  const points = [];
+  const now = new Date();
+  const count = range === "7D" ? 7 : range === "30D" ? 5 : range === "90D" ? 6 : 12;
+  const stepDays = range === "7D" ? 1 : range === "30D" ? 6 : range === "90D" ? 15 : 30;
+
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * stepDays * 86400000);
+    const dateLabel = range === "1Y"
+      ? d.toLocaleDateString("en-US", { month: "short" })
+      : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    points.push({
+      date: dateLabel,
+      enrolled: 0,
+      locked: 0,
+      released: 0,
+    });
+  }
+  return points;
+}
+
 function Dashboard() {
+  const queryClient = useQueryClient();
   const [activeRange, setActiveRange] = useState("30D");
   const user = session.getUser();
-  const userName = user?.name ? user.name.split(" ")[0] : "Somya";
+  const userName = user?.name
+    ? user.name.split(" ")[0]
+    : user?.email
+      ? user.email.split("@")[0]
+      : "Administrator";
 
-  const { data, isLoading, refetch, isRefetching } = useQuery({
+  // 1. BI Summary Aggregation (KPI counts, status overview, recent enrollments)
+  const {
+    data: summaryData,
+    isLoading: isSummaryLoading,
+    refetch: refetchSummary,
+    isRefetching: isSummaryRefetching,
+    dataUpdatedAt: summaryUpdatedAt,
+  } = useQuery({
     queryKey: ["bi", "summary"],
     queryFn: () => apiClient.get("/bi/summary"),
   });
 
-  const summary = data?.data || {
-    totalDealers: 248,
-    totalDevicesEnrolled: 12500,
-    devicesLocked: 7800,
-    devicesUnlocked: 3100,
-    devicesReleased: 3900,
+  // 2. Full Portfolio & BI Dashboard Endpoint (collections, loans, portfolio risk)
+  const {
+    data: dashboardData,
+    refetch: refetchDashboard,
+    isRefetching: isDashboardRefetching,
+  } = useQuery({
+    queryKey: ["bi", "dashboard"],
+    queryFn: () => apiClient.get("/bi/dashboard"),
+  });
+
+  // 3. User Personalized Dashboard Layout Endpoint
+  const { data: layoutData } = useQuery({
+    queryKey: ["bi", "dashboard", "layout"],
+    queryFn: () => apiClient.get("/bi/dashboard/layout"),
+  });
+
+  // 4. Granular Trends for selected range
+  const granularity = activeRange === "7D" ? "day" : activeRange === "30D" ? "day" : activeRange === "90D" ? "week" : "month";
+  const {
+    data: trendsData,
+    refetch: refetchTrends,
+    isRefetching: isTrendsRefetching,
+  } = useQuery({
+    queryKey: ["bi", "trends", granularity],
+    queryFn: () => apiClient.get(`/bi/trends?granularity=${granularity}`),
+    enabled: user?.role === "Super Admin",
+  });
+
+  // 5. Audit Trail for Live Operational Events
+  const {
+    data: auditData,
+    refetch: refetchAudit,
+    isRefetching: isAuditRefetching,
+  } = useQuery({
+    queryKey: ["bi", "audit-trail", { limit: 5 }],
+    queryFn: () => apiClient.get("/bi/audit-trail?limit=5"),
+  });
+
+  // 6. Registered Dealers List
+  const {
+    data: dealersData,
+    refetch: refetchDealers,
+    isRefetching: isDealersRefetching,
+  } = useQuery({
+    queryKey: ["dealers", "top-list"],
+    queryFn: () => apiClient.get("/dealers?limit=5"),
+  });
+
+  // Load user's saved layout configuration
+  useEffect(() => {
+    if (layoutData?.data?.layout?.activeRange) {
+      setActiveRange(layoutData.data.layout.activeRange);
+    }
+  }, [layoutData]);
+
+  // Persist dashboard layout updates
+  const saveLayoutMutation = useMutation({
+    mutationFn: (newLayout: any) => apiClient.post("/bi/dashboard/layout", { layout: newLayout }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bi", "dashboard", "layout"] });
+    },
+  });
+
+  const handleRangeChange = (range: string) => {
+    setActiveRange(range);
+    saveLayoutMutation.mutate({
+      ...(layoutData?.data?.layout || {}),
+      activeRange: range,
+    });
+  };
+
+  const isRefetching =
+    isSummaryRefetching ||
+    isDashboardRefetching ||
+    isTrendsRefetching ||
+    isAuditRefetching ||
+    isDealersRefetching;
+
+  const handleSyncFleet = async () => {
+    await Promise.all([
+      refetchSummary(),
+      refetchDashboard(),
+      refetchTrends(),
+      refetchAudit(),
+      refetchDealers(),
+    ]);
+  };
+
+  const summary = summaryData?.data || {
+    totalDealers: 0,
+    totalDevicesEnrolled: 0,
+    devicesLocked: 0,
+    devicesUnlocked: 0,
+    devicesReleased: 0,
     recentEnrollments: [] as any[],
   };
 
-  // Pie chart breakdown
-  const pieData = [
-    { name: "Locked", value: summary.devicesLocked || 7800, color: "#6366F1" },
-    { name: "Unlocked", value: summary.devicesUnlocked || 3100, color: "#C7D2FE" },
-    { name: "Released", value: summary.devicesReleased || 1600, color: "#E0E7FF" },
-  ];
+  const lockedCount = summary.devicesLocked ?? 0;
+  const unlockedCount = summary.devicesUnlocked ?? 0;
+  const releasedCount = summary.devicesReleased ?? 0;
+  const totalDevices = summary.totalDevicesEnrolled ?? (lockedCount + unlockedCount + releasedCount);
 
-  const totalPie = pieData.reduce((acc, curr) => acc + curr.value, 0) || 12500;
+  const lockedPct = totalDevices > 0 ? Math.round((lockedCount / totalDevices) * 100) : 0;
+  const unlockedPct = totalDevices > 0 ? Math.round((unlockedCount / totalDevices) * 100) : 0;
+  const releasedPct = totalDevices > 0 ? Math.max(0, 100 - lockedPct - unlockedPct) : 0;
+
+  // Real Dynamic Spline Chart Data
+  const chartData = useMemo(() => {
+    const enrollmentTrends = trendsData?.data?.enrollment;
+    if (enrollmentTrends && Array.isArray(enrollmentTrends) && enrollmentTrends.length > 0) {
+      return enrollmentTrends.map((point: any) => {
+        const count = Number(point.count) || 0;
+        return {
+          date: new Date(point.bucket).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          enrolled: count,
+          locked: Math.round(count * (lockedPct / 100)),
+          released: Math.round(count * (releasedPct / 100)),
+        };
+      });
+    }
+    return generateDynamicTimeAxis(activeRange);
+  }, [trendsData, activeRange, lockedPct, releasedPct]);
+
+  // Real Dynamic Recent Activities
+  const recentActivities = useMemo(() => {
+    if (summary.recentEnrollments && summary.recentEnrollments.length > 0) {
+      return summary.recentEnrollments.slice(0, 3).map((item: any) => ({
+        id: item.deviceId,
+        title: item.status === "Locked" ? "Device Locked" : item.status === "Released" ? "Device Released" : "Device Enrolled",
+        subtitle: item.imei1 ? `IMEI ${item.imei1}` : (item.deviceCode || "Device Enrolled"),
+        time: formatRelativeTime(item.enrolledAt),
+        type: item.status || "Assigned",
+      }));
+    }
+
+    const auditItems = auditData?.data?.items;
+    if (auditItems && Array.isArray(auditItems) && auditItems.length > 0) {
+      return auditItems.slice(0, 3).map((item: any) => {
+        const actionLabel = item.action === "user.login"
+          ? "Admin Signed In"
+          : item.action === "dealer.create"
+            ? "New Dealer Registered"
+            : item.action?.replace(".", " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) || "System Event";
+
+        return {
+          id: item.id,
+          title: actionLabel,
+          subtitle: item.actorEmail || item.targetId || "Console Admin",
+          time: formatRelativeTime(item.createdAt),
+          type: item.category === "dealer" ? "Dealer" : item.action?.includes("lock") ? "Locked" : "Assigned",
+        };
+      });
+    }
+
+    return [];
+  }, [summary.recentEnrollments, auditData]);
+
+  // Real Dynamic Top Dealers
+  const topDealersList = useMemo(() => {
+    const rawDealers = dealersData?.data?.items || dealersData?.data;
+    if (rawDealers && Array.isArray(rawDealers) && rawDealers.length > 0) {
+      return rawDealers.slice(0, 3).map((d: any, idx: number) => ({
+        id: d.id,
+        name: d.name || `Dealer #${idx + 1}`,
+        initial: (d.name || "D").charAt(0).toUpperCase(),
+        units: d.devicesCount ? `+${d.devicesCount} Units` : (d.status === "active" ? "Active" : "Registered"),
+        colorClass: idx === 0 ? "bg-purple-500/15 text-purple-700" : idx === 1 ? "bg-amber-500/15 text-amber-700" : "bg-blue-500/15 text-blue-700",
+      }));
+    }
+
+    const recentDealers = dashboardData?.data?.recentDealers;
+    if (recentDealers && Array.isArray(recentDealers) && recentDealers.length > 0) {
+      return recentDealers.slice(0, 3).map((d: any, idx: number) => ({
+        id: d.id,
+        name: d.name || `Dealer #${idx + 1}`,
+        initial: (d.name || "D").charAt(0).toUpperCase(),
+        units: d.devicesCount ? `+${d.devicesCount} Units` : (d.status === "active" ? "Active" : "Registered"),
+        colorClass: idx === 0 ? "bg-purple-500/15 text-purple-700" : idx === 1 ? "bg-amber-500/15 text-amber-700" : "bg-blue-500/15 text-blue-700",
+      }));
+    }
+
+    return [];
+  }, [dealersData, dashboardData]);
+
+  // Pie chart breakdown
+  const pieData = totalDevices > 0
+    ? [
+        { name: "Locked", value: lockedCount, color: "#6366F1" },
+        { name: "Unlocked", value: unlockedCount, color: "#C7D2FE" },
+        { name: "Released", value: releasedCount, color: "#E0E7FF" },
+      ]
+    : [
+        { name: "Locked", value: 0, color: "#6366F1" },
+        { name: "Unlocked", value: 0, color: "#C7D2FE" },
+        { name: "Released", value: 0, color: "#E0E7FF" },
+      ];
+
+  const totalPie = totalDevices;
   const formatK = (val: number) => (val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val));
 
   return (
@@ -131,7 +354,7 @@ function Dashboard() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
+            onClick={handleSyncFleet}
             disabled={isRefetching}
             className="h-10 rounded-full border border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 backdrop-blur-xl text-xs font-semibold px-4 shadow-xs hover:bg-white transition-all cursor-pointer"
           >
@@ -150,42 +373,58 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 2. Top Row: 4 Metric Cards matching Reference */}
+      {/* 2. Top Row: 4 Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link to="/dealers" className="block focus:outline-none">
           <KpiCard
             label="Total Dealers"
-            value={formatK(summary.totalDealers || 248)}
+            value={formatK(summary.totalDealers ?? 0)}
             icon={Users}
             tone="primary"
-            trend={{ value: "12%", up: true }}
+            trend={
+              summary.totalDealers > 0
+                ? { value: `${dashboardData?.data?.kpis?.activeDealers ?? summary.totalDealers} Active`, up: true }
+                : { value: "0 Registered", up: false }
+            }
           />
         </Link>
         <Link to="/devices" className="block focus:outline-none">
           <KpiCard
             label="Enrolled Devices"
-            value={formatK(summary.totalDevicesEnrolled || 12500)}
+            value={formatK(summary.totalDevicesEnrolled ?? 0)}
             icon={Smartphone}
             tone="primary"
-            trend={{ value: "8%", up: true }}
+            trend={
+              totalDevices > 0
+                ? { value: `${unlockedPct}% Active`, up: true }
+                : { value: "0 Enrolled", up: false }
+            }
           />
         </Link>
         <Link to="/devices" className="block focus:outline-none">
           <KpiCard
             label="Locked Devices"
-            value={formatK(summary.devicesLocked || 7800)}
+            value={formatK(summary.devicesLocked ?? 0)}
             icon={Lock}
             tone="primary"
-            trend={{ value: "5%", up: true }}
+            trend={
+              totalDevices > 0
+                ? { value: `${lockedPct}% Hold`, up: lockedCount > 0 }
+                : { value: "0 Locked", up: false }
+            }
           />
         </Link>
         <Link to="/devices" className="block focus:outline-none">
           <KpiCard
             label="Released Devices"
-            value={formatK(summary.devicesReleased || 3900)}
+            value={formatK(summary.devicesReleased ?? 0)}
             icon={CheckCircle2}
             tone="primary"
-            trend={{ value: "10%", up: true }}
+            trend={
+              totalDevices > 0
+                ? { value: `${releasedPct}% Settled`, up: true }
+                : { value: "0 Settled", up: false }
+            }
           />
         </Link>
       </div>
@@ -210,7 +449,7 @@ function Dashboard() {
                 {["7D", "30D", "90D", "1Y"].map((range) => (
                   <button
                     key={range}
-                    onClick={() => setActiveRange(range)}
+                    onClick={() => handleRangeChange(range)}
                     className={cn(
                       "rounded-full px-3 py-1 font-semibold transition-all cursor-pointer text-xs",
                       activeRange === range
@@ -247,7 +486,7 @@ function Dashboard() {
           {/* Spline Area Chart */}
           <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={splineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEnrolled" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4} />
@@ -272,7 +511,7 @@ function Dashboard() {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: "#64748B", fontSize: 11 }}
-                  tickFormatter={(val) => (val === 0 ? "0" : `${val / 1000}K`)}
+                  tickFormatter={(val) => (val === 0 ? "0" : val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val))}
                 />
                 <Tooltip content={<CustomChartTooltip />} />
                 <Area
@@ -375,9 +614,12 @@ function Dashboard() {
           {/* Bottom status indicators */}
           <div className="flex items-center justify-between border-t border-black/5 dark:border-white/10 pt-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Connected
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              {totalDevices > 0 ? "Telemetry Active" : "Fleet Ready"}
             </span>
-            <span className="text-[11px]">Last Sync: 2m ago</span>
+            <span className="text-[11px]">
+              Last Sync: {summaryUpdatedAt ? formatRelativeTime(summaryUpdatedAt) : "Just now"}
+            </span>
           </div>
         </div>
       </div>
@@ -428,7 +670,7 @@ function Dashboard() {
                   <span className="h-2 w-2 rounded-full bg-[#6366F1] shrink-0" /> Locked
                 </span>
                 <span className="font-semibold text-foreground font-mono">
-                  {formatK(summary.devicesLocked || 7800)} <span className="text-muted-foreground/70 font-normal">62%</span>
+                  {formatK(lockedCount)} <span className="text-muted-foreground/70 font-normal">{lockedPct}%</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -436,7 +678,7 @@ function Dashboard() {
                   <span className="h-2 w-2 rounded-full bg-[#C7D2FE] shrink-0" /> Unlocked
                 </span>
                 <span className="font-semibold text-foreground font-mono">
-                  {formatK(summary.devicesUnlocked || 3100)} <span className="text-muted-foreground/70 font-normal">25%</span>
+                  {formatK(unlockedCount)} <span className="text-muted-foreground/70 font-normal">{unlockedPct}%</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -444,7 +686,7 @@ function Dashboard() {
                   <span className="h-2 w-2 rounded-full bg-[#E0E7FF] shrink-0" /> Released
                 </span>
                 <span className="font-semibold text-foreground font-mono">
-                  {formatK(summary.devicesReleased || 1600)} <span className="text-muted-foreground/70 font-normal">13%</span>
+                  {formatK(releasedCount)} <span className="text-muted-foreground/70 font-normal">{releasedPct}%</span>
                 </span>
               </div>
             </div>
@@ -467,48 +709,49 @@ function Dashboard() {
           </div>
 
           <div className="space-y-3 my-1">
-            <div className="flex items-start gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 shrink-0 mt-0.5">
-                <Lock className="h-3.5 w-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-foreground truncate">Device Locked</p>
-                  <span className="text-[10px] text-muted-foreground">2m ago</span>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((act) => (
+                <div key={act.id} className="flex items-start gap-2.5">
+                  <div
+                    className={cn(
+                      "flex h-7 w-7 items-center justify-center rounded-lg shrink-0 mt-0.5",
+                      act.type === "Locked"
+                        ? "bg-indigo-500/15 text-indigo-600"
+                        : act.type === "Released"
+                          ? "bg-purple-500/15 text-purple-600"
+                          : act.type === "Dealer"
+                            ? "bg-emerald-500/15 text-emerald-600"
+                            : "bg-amber-500/15 text-amber-600"
+                    )}
+                  >
+                    {act.type === "Locked" ? (
+                      <Lock className="h-3.5 w-3.5" />
+                    ) : act.type === "Released" ? (
+                      <ShieldOff className="h-3.5 w-3.5" />
+                    ) : act.type === "Dealer" ? (
+                      <Store className="h-3.5 w-3.5" />
+                    ) : (
+                      <Unlock className="h-3.5 w-3.5" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-foreground truncate">{act.title}</p>
+                      <span className="text-[10px] text-muted-foreground">{act.time}</span>
+                    </div>
+                    <p className="text-[11px] font-mono text-muted-foreground truncate">
+                      {act.subtitle}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] font-mono text-muted-foreground truncate">
-                  IMEI 356789012345678
-                </p>
+              ))
+            ) : (
+              <div className="py-6 text-center">
+                <Activity className="h-5 w-5 mx-auto text-muted-foreground/40 mb-1.5" />
+                <p className="text-xs font-semibold text-foreground">No Activity Recorded</p>
+                <p className="text-[11px] text-muted-foreground">Fleet events will stream here live.</p>
               </div>
-            </div>
-
-            <div className="flex items-start gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 shrink-0 mt-0.5">
-                <Store className="h-3.5 w-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-foreground truncate">New Dealer Registered</p>
-                  <span className="text-[10px] text-muted-foreground">12m ago</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground truncate">TechNova Solutions</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 shrink-0 mt-0.5">
-                <Unlock className="h-3.5 w-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-foreground truncate">Device Unlocked</p>
-                  <span className="text-[10px] text-muted-foreground">25m ago</span>
-                </div>
-                <p className="text-[11px] font-mono text-muted-foreground truncate">
-                  IMEI 356789012345679
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -528,47 +771,34 @@ function Dashboard() {
           </div>
 
           <div className="space-y-3 my-1">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/15 text-purple-700 font-bold text-xs">
-                  T
-                </span>
-                <span className="text-xs font-semibold text-foreground truncate">
-                  TechNova Solutions
-                </span>
+            {topDealersList.length > 0 ? (
+              topDealersList.map((dealer) => (
+                <div key={dealer.id} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full font-bold text-xs",
+                        dealer.colorClass
+                      )}
+                    >
+                      {dealer.initial}
+                    </span>
+                    <span className="text-xs font-semibold text-foreground truncate">
+                      {dealer.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                    {dealer.units}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="py-6 text-center">
+                <Store className="h-5 w-5 mx-auto text-muted-foreground/40 mb-1.5" />
+                <p className="text-xs font-semibold text-foreground">No Dealers Registered</p>
+                <p className="text-[11px] text-muted-foreground">Partner retail stores will appear here.</p>
               </div>
-              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                +524 Units
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/15 text-amber-700 font-bold text-xs">
-                  G
-                </span>
-                <span className="text-xs font-semibold text-foreground truncate">
-                  Global Mobiles
-                </span>
-              </div>
-              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                +382 Units
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/15 text-blue-700 font-bold text-xs">
-                  S
-                </span>
-                <span className="text-xs font-semibold text-foreground truncate">
-                  SmartBuy Retail
-                </span>
-              </div>
-              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                +317 Units
-              </span>
-            </div>
+            )}
           </div>
         </div>
 
@@ -583,10 +813,14 @@ function Dashboard() {
 
           <div className="relative z-10 my-3">
             <h4 className="text-sm font-bold tracking-tight text-white leading-snug">
-              Powering Smarter Device Management
+              {totalDevices > 0
+                ? `Securing ${totalDevices.toLocaleString()} Active Devices`
+                : "Powering Smarter Device Management"}
             </h4>
             <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-              Realtime telemetry & automated locking policies for device financing.
+              {summary.totalDealers > 0
+                ? `Fleet telemetry coordinated across ${summary.totalDealers} verified dealer locations.`
+                : "Realtime telemetry & automated locking policies for device financing."}
             </p>
           </div>
 

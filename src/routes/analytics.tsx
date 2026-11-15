@@ -34,8 +34,8 @@ type TrendsResponse = {
   dealers: TrendPoint[];
 };
 
-const ENROLLMENT_COLOR = "#2563EB";
-const DEALERS_COLOR = "#10B981";
+const ENROLLMENT_COLOR = "#1265D8";
+const DEALERS_COLOR = "#08BFEA";
 
 function localDayBoundary(dateStr: string, edge: "start" | "end"): Date {
   const [year, month, day] = dateStr.split("-").map(Number);

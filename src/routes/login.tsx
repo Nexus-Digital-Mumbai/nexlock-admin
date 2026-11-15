@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Logo } from "@/components/nexlock/Logo";
 import { apiClient } from "@/lib/api-client";
 import { session } from "@/lib/session";
 
@@ -75,20 +76,16 @@ function LoginPage() {
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-12 lg:grid-cols-12 lg:px-12">
         {/* Left Hero Panel */}
         <div className="hidden lg:col-span-7 lg:block space-y-7 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 px-4 py-1.5 text-xs font-semibold text-[#4338CA] dark:text-indigo-300 shadow-xs backdrop-blur-xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 px-4 py-1.5 text-xs font-semibold text-[#1265D8] dark:text-blue-300 shadow-xs backdrop-blur-xl">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             Zero-Trust Device Financing Infrastructure
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center mb-2">
-              <img
-                src="/nexus-official-logo.png"
-                alt="NEXUS"
-                className="h-14 w-auto max-w-[280px] object-contain"
-              />
+              <Logo size="xl" />
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#14172C] dark:text-white sm:text-5xl lg:text-[46px] leading-[1.18]">
+            <h1 className="text-4xl font-extrabold tracking-tight text-[#071D62] dark:text-white sm:text-5xl lg:text-[46px] leading-[1.18]">
               Intelligent Remote Lock & Device Financing Platform.
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-[#5A5F7A] dark:text-slate-300">
@@ -147,24 +144,20 @@ function LoginPage() {
         {/* Right Authentication Card */}
         <div className="mx-auto w-full max-w-md lg:col-span-5 animate-fade-up">
           <div className="mb-6 flex justify-center lg:hidden">
-            <img
-              src="/nexus-official-logo.png"
-              alt="NEXUS"
-              className="h-12 w-auto max-w-[220px] object-contain"
-            />
+            <Logo size="lg" />
           </div>
 
           <div className="overflow-hidden rounded-3xl border border-white/85 dark:border-white/15 bg-white/70 dark:bg-slate-900/80 p-8 sm:p-9 shadow-[0_20px_50px_rgba(80,85,120,0.12)] backdrop-blur-2xl">
-            <div className="mb-6 space-y-1.5">
+            <div className="mb-6 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#4338CA] dark:text-indigo-400">
-                  Nexus Portal
-                </span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 p-1.5 shadow-xs">
+                  <img src="/nexus-icon.png" alt="Nexus" className="h-full w-full object-contain" />
+                </div>
                 <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                   System Operational
                 </span>
               </div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-[#14172C] dark:text-white">
+              <h2 className="text-2xl font-extrabold tracking-tight text-[#071D62] dark:text-white">
                 Console Sign In
               </h2>
               <p className="text-xs leading-relaxed text-[#64748B] dark:text-slate-400">
@@ -197,7 +190,7 @@ function LoginPage() {
                   <Label htmlFor="password" className="text-xs font-semibold text-foreground">
                     Password
                   </Label>
-                  <Link to="/login" className="text-xs font-medium text-[#4338CA] hover:underline">
+                  <Link to="/login" className="text-xs font-medium text-[#1265D8] hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -231,7 +224,7 @@ function LoginPage() {
                   id="remember"
                   checked={remember}
                   onCheckedChange={(v) => setRemember(!!v)}
-                  className="rounded-md border-border/80 data-[state=checked]:bg-[#1E1B4B]"
+                  className="rounded-md border-border/80 data-[state=checked]:bg-[#071D62]"
                 />
                 <Label htmlFor="remember" className="cursor-pointer text-xs font-normal text-muted-foreground">
                   Trust this workstation for 30 days
@@ -241,7 +234,7 @@ function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-2 h-11 w-full rounded-2xl bg-[#1E1B4B] hover:bg-[#2A2665] text-white font-semibold text-sm shadow-md transition-all cursor-pointer"
+                className="mt-2 h-11 w-full rounded-2xl bg-[#071D62] hover:bg-[#1265D8] text-white font-semibold text-sm shadow-md transition-all cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -264,7 +257,7 @@ function LoginPage() {
             <div className="mt-5 text-center">
               <Link
                 to="/distributor-login"
-                className="text-xs font-semibold text-[#4338CA] hover:underline transition-colors"
+                className="text-xs font-semibold text-[#1265D8] hover:underline transition-colors"
               >
                 Distributor / Dealer App Login →
               </Link>

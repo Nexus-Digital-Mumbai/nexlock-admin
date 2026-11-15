@@ -41,7 +41,7 @@ export function PageHeader({
             ))}
           </nav>
         )}
-        <h1 className="text-2xl font-extrabold tracking-tight text-[#14172C] dark:text-white md:text-3xl">
+        <h1 className="text-2xl font-extrabold tracking-tight text-[#071D62] dark:text-white md:text-3xl">
           {title}
         </h1>
         {description && (

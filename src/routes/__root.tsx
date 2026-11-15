@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ShieldCheck, RefreshCw, AlertCircle } from "lucide-react";
 
 import appCss from "../styles.css?url";
-import nexlockLogo from "@/assets/nexlock-logo.jpeg";
+import nexusIcon from "@/assets/nexus-icon.png";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/nexlock/AppShell";
 import { Toaster } from "@/components/ui/sonner";
@@ -74,8 +74,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
     ],
     links: [
-      { rel: "shortcut icon", href: nexlockLogo },
-      { rel: "icon", type: "image/jpeg", href: nexlockLogo },
+      { rel: "shortcut icon", href: nexusIcon },
+      { rel: "icon", type: "image/png", href: nexusIcon },
+      { rel: "apple-touch-icon", href: nexusIcon },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -137,11 +138,17 @@ function AuthGate({ children }: { children: ReactNode }) {
   if (!ready) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
-        <div className="relative flex h-16 w-16 items-center justify-center">
+        <div className="relative flex h-20 w-20 items-center justify-center">
           <div className="absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-          <ShieldCheck className="h-6 w-6 text-primary" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/80 dark:border-white/15 bg-white/80 dark:bg-white/10 p-2 shadow-lg backdrop-blur-xl">
+            <img
+              src="/nexus-icon.png"
+              alt="Nexus"
+              className="h-full w-full object-contain animate-pulse"
+            />
+          </div>
         </div>
-        <p className="mt-4 text-xs font-medium tracking-wide uppercase text-muted-foreground animate-pulse">Initializing Nexus Console…</p>
+        <p className="mt-5 text-xs font-semibold tracking-wider uppercase text-muted-foreground animate-pulse">Initializing Nexus Console…</p>
       </div>
     );
   }

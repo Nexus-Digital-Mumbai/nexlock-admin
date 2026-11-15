@@ -19,8 +19,8 @@ export function KpiCard({
 }) {
   const toneConfig: Record<string, { iconBg: string; sparkColor: string }> = {
     primary: {
-      iconBg: "bg-[#EDE9FE] dark:bg-indigo-950/50 text-[#6366F1] dark:text-indigo-400 border border-white/80 dark:border-white/10",
-      sparkColor: "#8B5CF6",
+      iconBg: "bg-[#EDE9FE] dark:bg-blue-950/40 text-[#1265D8] dark:text-blue-400 border border-white/80 dark:border-white/10",
+      sparkColor: "#1265D8",
     },
     success: {
       iconBg: "bg-[#DCFCE7] dark:bg-emerald-950/50 text-[#16A34A] dark:text-emerald-400 border border-white/80 dark:border-white/10",
