@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, Check, Trash2, Calendar, Shield, Smartphone, CreditCard, User, AlertCircle, AlertTriangle, Info, Store } from "lucide-react";
+import { Bell, Check, Trash2, Calendar, Shield, Smartphone, CreditCard, User, AlertCircle, AlertTriangle, Info, Store, CheckCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -15,7 +15,7 @@ export function NotificationDrawer() {
   const { data: unreadData } = useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: () => apiClient.get("/notifications/unread-count"),
-    refetchInterval: 15000, // Poll every 15s for live notifications
+    refetchInterval: 15000,
   });
 
   const unreadCount = unreadData?.data?.count || 0;
@@ -24,7 +24,7 @@ export function NotificationDrawer() {
   const { data: listData, refetch } = useQuery({
     queryKey: ["notifications", "list"],
     queryFn: () => apiClient.get("/notifications"),
-    enabled: open, // Only fetch list when drawer is opened
+    enabled: open,
   });
 
   const notifications = listData?.data?.items || [];
@@ -56,14 +56,12 @@ export function NotificationDrawer() {
     },
   });
 
-  // Trigger refetch on open
   useEffect(() => {
     if (open) {
       refetch();
     }
-  }, [open]);
+  }, [open, refetch]);
 
-  // Group notifications helper
   const groupNotifications = (items: any[]) => {
     const today: any[] = [];
     const yesterday: any[] = [];
@@ -94,7 +92,6 @@ export function NotificationDrawer() {
 
   const { today, yesterday, earlier } = groupNotifications(notifications);
 
-  // Format time relative or simple string
   const formatTime = (dateStr: string) => {
     const d = new Date(dateStr);
     const now = new Date();
@@ -108,37 +105,35 @@ export function NotificationDrawer() {
     return d.toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
-  // Get Priority Styling
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case "CRITICAL":
         return {
-          bg: "bg-red-500/10 border-red-500/20 text-red-500",
-          indicator: "bg-red-500",
+          bg: "bg-destructive/10 border-destructive/25 text-destructive",
+          indicator: "bg-destructive",
           icon: AlertCircle,
         };
       case "WARNING":
         return {
-          bg: "bg-amber-500/10 border-amber-500/20 text-amber-500",
-          indicator: "bg-amber-500",
+          bg: "bg-warning/15 border-warning/30 text-warning-foreground",
+          indicator: "bg-warning",
           icon: AlertTriangle,
         };
       case "SUCCESS":
         return {
-          bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
-          indicator: "bg-emerald-500",
+          bg: "bg-success/15 border-success/30 text-success-foreground",
+          indicator: "bg-success",
           icon: Check,
         };
       default:
         return {
-          bg: "bg-blue-500/10 border-blue-500/20 text-blue-500",
-          indicator: "bg-blue-500",
+          bg: "bg-primary/10 border-primary/20 text-primary",
+          indicator: "bg-primary",
           icon: Info,
         };
     }
   };
 
-  // Resolve Category Icon
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "DEALER":
@@ -156,7 +151,6 @@ export function NotificationDrawer() {
     }
   };
 
-  // Click handler resolving actions
   const handleItemClick = async (item: any) => {
     if (!item.isRead) {
       await markReadMutation.mutateAsync(item.id);
@@ -165,7 +159,6 @@ export function NotificationDrawer() {
     const meta = item.metadata;
     if (meta && meta.entityId) {
       const moduleName = String(meta.module).toLowerCase();
-      // Safe navigation
       if (moduleName === "loan" || moduleName === "emi") {
         window.location.href = `/loans?search=${meta.entityId}`;
       } else if (moduleName === "device") {
@@ -178,7 +171,6 @@ export function NotificationDrawer() {
     }
   };
 
-  // Render Notification Item
   const renderItem = (item: any) => {
     const isUnread = !item.isRead;
     const style = getPriorityStyle(item.priority);
@@ -189,34 +181,35 @@ export function NotificationDrawer() {
       <div
         key={item.id}
         className={cn(
-          "group relative flex items-start gap-3 rounded-lg border p-4 transition-all duration-200 hover:bg-muted/40",
-          isUnread ? "bg-muted/15 border-border/80 shadow-xs" : "bg-card/50 border-border/40"
+          "group relative flex items-start gap-3 rounded-xl border p-3.5 transition-all duration-200 hover:shadow-xs",
+          isUnread
+            ? "bg-card border-primary/30 shadow-xs"
+            : "bg-card/60 border-border/60 hover:bg-card/90"
         )}
       >
         {isUnread && (
-          <span className={cn("absolute left-2 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full", style.indicator)} />
+          <span className={cn("absolute left-1.5 top-4 h-2 w-2 rounded-full", style.indicator)} />
         )}
 
-        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md border", style.bg)}>
+        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border", style.bg)}>
           <CatIcon className="h-4 w-4" />
         </div>
 
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h4 className={cn("text-xs font-semibold leading-none", isUnread ? "text-foreground" : "text-foreground/80")}>
+            <h4 className={cn("text-xs font-semibold leading-tight truncate", isUnread ? "text-foreground font-bold" : "text-foreground/80")}>
               {item.title}
             </h4>
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{formatTime(item.createdAt)}</span>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0">{formatTime(item.createdAt)}</span>
           </div>
-          <p className="text-xs text-muted-foreground/90 leading-relaxed pr-6">{item.content}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed pr-2 line-clamp-2">{item.content}</p>
 
-          {/* Action trigger wrapper */}
-          <div className="mt-2.5 flex items-center gap-2">
+          <div className="mt-2 flex items-center justify-between pt-1">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleItemClick(item)}
-              className="h-7 text-[10px] px-2.5 font-medium border-primary/20 hover:border-primary/45 hover:bg-primary/5 text-primary"
+              className="h-6.5 text-[10px] px-2.5 font-medium border-border/80 hover:border-primary/40 hover:text-primary transition-colors"
             >
               {actionLabel || "View Details"}
             </Button>
@@ -224,7 +217,8 @@ export function NotificationDrawer() {
               variant="ghost"
               size="icon"
               onClick={() => deleteMutation.mutate(item.id)}
-              className="h-7 w-7 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/5 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-6 w-6 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+              title="Delete notification"
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -237,22 +231,27 @@ export function NotificationDrawer() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <button
+          className="relative flex h-11 w-11 items-center justify-center rounded-full glass-pill hover:border-primary/40 hover:text-primary dark:hover:text-[#00D4FF] hover:shadow-[0_0_15px_rgba(7,85,216,0.15)] dark:hover:shadow-[0_0_15px_rgba(0,212,255,0.2)] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 text-foreground"
+          aria-label="Open notifications"
+          title="Notifications"
+        >
           <Bell className="h-[18px] w-[18px]" />
           {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground ring-2 ring-card">
-              {unreadCount}
+            <span className="absolute right-2 top-2 flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500" />
             </span>
           )}
-        </Button>
+        </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
-        <SheetHeader className="p-6 pb-4 border-b border-border bg-card/50">
+      <SheetContent className="w-full sm:max-w-md flex flex-col p-0 card-elevated border-l border-border shadow-2xl">
+        <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-card/40">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <SheetTitle className="text-base font-bold">Notifications</SheetTitle>
+            <div className="flex items-center gap-2.5">
+              <SheetTitle className="text-sm font-bold tracking-tight text-foreground dark:text-[#F5F8FF]">Activity & Alerts</SheetTitle>
               {unreadCount > 0 && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
                   {unreadCount} unread
                 </span>
               )}
@@ -262,53 +261,53 @@ export function NotificationDrawer() {
                 variant="ghost"
                 size="sm"
                 onClick={() => markAllReadMutation.mutate()}
-                className="h-8 text-xs text-muted-foreground hover:text-primary cursor-pointer hover:bg-transparent"
+                className="h-7 text-xs text-muted-foreground hover:text-primary gap-1 px-2 font-medium"
               >
-                Mark all as read
+                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
               </Button>
             )}
           </div>
         </SheetHeader>
 
         {notifications.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-muted/5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-4 animate-pulse">
-              <Bell className="h-6 w-6" />
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground mb-4">
+              <Bell className="h-6 w-6 text-primary/70" />
             </div>
-            <h3 className="text-sm font-semibold text-foreground">All caught up!</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-              No new alerts or activity notifications. We will notify you here when anything happens.
+            <h3 className="text-sm font-bold text-foreground">Everything is up to date</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
+              No unread security events, device triggers, or system alerts at this moment.
             </p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-5 space-y-5">
             {today.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">Today</span>
                   <Separator className="flex-1" />
                 </div>
-                <div className="grid gap-3">{today.map(renderItem)}</div>
+                <div className="grid gap-2.5">{today.map(renderItem)}</div>
               </div>
             )}
 
             {yesterday.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">Yesterday</span>
                   <Separator className="flex-1" />
                 </div>
-                <div className="grid gap-3">{yesterday.map(renderItem)}</div>
+                <div className="grid gap-2.5">{yesterday.map(renderItem)}</div>
               </div>
             )}
 
             {earlier.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">Earlier</span>
                   <Separator className="flex-1" />
                 </div>
-                <div className="grid gap-3">{earlier.map(renderItem)}</div>
+                <div className="grid gap-2.5">{earlier.map(renderItem)}</div>
               </div>
             )}
           </div>

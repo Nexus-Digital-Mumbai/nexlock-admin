@@ -11,7 +11,12 @@
 
 import { session } from "./session";
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://nexlock-backend.onrender.com/api/v1";
+const API_BASE =
+  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ""
+    ? import.meta.env.VITE_API_URL
+    : import.meta.env.DEV
+      ? "/api/v1"
+      : "https://nexlock-backend.onrender.com/api/v1";
 
 // ---------- Refresh mutex ----------
 
