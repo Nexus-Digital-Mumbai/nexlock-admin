@@ -44,13 +44,15 @@ export default defineConfig({
           target: "https://nexlock-backend.onrender.com",
           changeOrigin: true,
           secure: false,
-          router: () => {
-            if (process.env.VITE_BACKEND_TARGET) {
-              return process.env.VITE_BACKEND_TARGET;
-            }
-            return isLocalBackendAlive
-              ? "http://127.0.0.1:5000"
-              : "https://nexlock-backend.onrender.com";
+          configure: (proxy) => {
+            proxy.before("web", "stream", (_req, _res, options) => {
+              const target =
+                process.env.VITE_BACKEND_TARGET ||
+                (isLocalBackendAlive
+                  ? "http://127.0.0.1:5000"
+                  : "https://nexlock-backend.onrender.com");
+              options.target = new URL(target);
+            });
           },
         },
       },
