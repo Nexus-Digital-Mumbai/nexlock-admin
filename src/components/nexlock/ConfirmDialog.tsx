@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, AlertCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -31,29 +32,41 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="card-elevated max-w-md rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-150">
         <AlertDialogHeader>
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-4">
             <div
-              className={
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border shadow-xs",
                 destructive
-                  ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive"
-                  : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning"
-              }
+                  ? "bg-destructive/10 text-destructive border-destructive/20"
+                  : "bg-warning/15 text-warning-foreground border-warning/30"
+              )}
             >
-              <AlertTriangle className="h-4 w-4" />
+              {destructive ? <AlertCircle className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
             </div>
-            <div>
-              <AlertDialogTitle>{title}</AlertDialogTitle>
-              <AlertDialogDescription className="mt-1">{description}</AlertDialogDescription>
+            <div className="space-y-1">
+              <AlertDialogTitle className="text-base font-bold text-foreground">
+                {title}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-xs leading-relaxed text-muted-foreground">
+                {description}
+              </AlertDialogDescription>
             </div>
           </div>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogFooter className="mt-5 flex gap-2">
+          <AlertDialogCancel className="rounded-lg border-border/80 text-xs font-semibold hover:bg-muted">
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={destructive ? "bg-destructive hover:bg-destructive/90" : ""}
+            className={cn(
+              "rounded-lg text-xs font-semibold shadow-xs transition-all",
+              destructive
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
           >
             {confirmLabel}
           </AlertDialogAction>

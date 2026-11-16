@@ -95,11 +95,11 @@ export function CrudModal<T extends Record<string, unknown>>({
       const empty = v === "" || v === null || v === undefined;
       if (f.required && empty) errs[f.name] = `${f.label} is required`;
       else if (!empty && f.type === "email" && !/^\S+@\S+\.\S+$/.test(String(v)))
-        errs[f.name] = "Enter a valid email";
+        errs[f.name] = "Enter a valid email address";
       else if (!empty && f.type === "tel" && String(v).replace(/\D/g, "").length < 7)
         errs[f.name] = "Enter a valid phone number";
       else if (!empty && f.type === "number" && Number.isNaN(Number(v)))
-        errs[f.name] = "Must be a number";
+        errs[f.name] = "Must be a valid number";
       else if (f.validate) {
         const msg = f.validate(v, values);
         if (msg) errs[f.name] = msg;
@@ -113,7 +113,6 @@ export function CrudModal<T extends Record<string, unknown>>({
     if (!validate()) return;
     setSubmitting(true);
     try {
-      // Coerce numbers
       const out: Record<string, unknown> = { ...values };
       fields.forEach((f) => {
         if (f.type === "number") out[f.name] = Number(out[f.name] ?? 0);
@@ -137,20 +136,23 @@ export function CrudModal<T extends Record<string, unknown>>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col bg-card text-card-foreground border border-border p-0 overflow-hidden">
-        <DialogHeader className="border-b border-border px-6 py-4 flex-shrink-0">
-          <DialogTitle className="text-base">{title}</DialogTitle>
+      <DialogContent className="card-elevated max-w-2xl max-h-[85vh] flex flex-col text-card-foreground p-0 overflow-hidden rounded-2xl shadow-2xl">
+        <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60 flex-shrink-0">
+          <DialogTitle className="text-base font-bold text-foreground">{title}</DialogTitle>
           {description && (
-            <DialogDescription className="text-xs">{description}</DialogDescription>
+            <DialogDescription className="text-xs text-muted-foreground">{description}</DialogDescription>
           )}
         </DialogHeader>
 
         <div className="px-6 py-5 space-y-6 flex-1 overflow-y-auto">
           {sections.map(([section, list], idx) => (
-            <div key={section || idx}>
+            <div key={section || idx} className="space-y-3">
               {section && (
-                <div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {section}
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {section}
+                  </span>
+                  <div className="flex-1 h-px bg-border/60" />
                 </div>
               )}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -159,15 +161,15 @@ export function CrudModal<T extends Record<string, unknown>>({
                     key={f.name}
                     className={cn("space-y-1.5", f.colSpan === 2 && "md:col-span-2")}
                   >
-                    <Label className="text-xs font-medium">
+                    <Label className="text-xs font-semibold text-foreground/90">
                       {f.label}
-                      {f.required && <span className="ml-0.5 text-destructive">*</span>}
+                      {f.required && <span className="ml-1 text-destructive font-bold">*</span>}
                     </Label>
-                    {renderField(f, values[f.name], (v) => setVal(f.name, v))}
+                    {renderField(f, values[f.name], (v) => setVal(f.name, v), !!errors[f.name])}
                     {errors[f.name] ? (
-                      <p className="text-xs text-destructive">{errors[f.name]}</p>
+                      <p className="text-[11px] font-medium text-destructive">{errors[f.name]}</p>
                     ) : f.helper ? (
-                      <p className="text-xs text-muted-foreground">{f.helper}</p>
+                      <p className="text-[11px] text-muted-foreground">{f.helper}</p>
                     ) : null}
                   </div>
                 ))}
@@ -176,11 +178,11 @@ export function CrudModal<T extends Record<string, unknown>>({
           ))}
         </div>
 
-        <DialogFooter className="border-t border-border px-6 py-3 sm:justify-end flex-shrink-0 bg-card">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+        <DialogFooter className="border-t border-border/80 px-6 py-3.5 sm:justify-end flex-shrink-0 bg-muted/20 gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={submitting} className="border-border/80 text-xs font-medium">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="gap-1.5">
+          <Button size="sm" onClick={handleSubmit} disabled={submitting} className="gap-1.5 text-xs font-semibold shadow-xs">
             {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {submitLabel ?? (mode === "edit" ? "Save Changes" : "Create")}
           </Button>
@@ -194,6 +196,7 @@ function renderField(
   f: FormField,
   value: unknown,
   onChange: (v: unknown) => void,
+  hasError: boolean,
 ): ReactNode {
   const t = f.type ?? "text";
   if (t === "textarea") {
@@ -203,18 +206,19 @@ function renderField(
         placeholder={f.placeholder}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
+        className={cn("text-xs bg-muted/20 border-border/80 focus-visible:bg-card", hasError && "border-destructive")}
       />
     );
   }
   if (t === "select") {
     return (
       <Select value={String(value ?? "")} onValueChange={(v) => onChange(v)}>
-        <SelectTrigger>
-          <SelectValue placeholder={f.placeholder ?? "Select…"} />
+        <SelectTrigger className={cn("h-9 text-xs bg-muted/20 border-border/80", hasError && "border-destructive")}>
+          <SelectValue placeholder={f.placeholder ?? "Select an option…"} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-xl shadow-xl border-border">
           {(f.options ?? []).map((o) => (
-            <SelectItem key={o.value} value={o.value}>
+            <SelectItem key={o.value} value={o.value} className="text-xs">
               {o.label}
             </SelectItem>
           ))}
@@ -224,9 +228,9 @@ function renderField(
   }
   if (t === "switch") {
     return (
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/20 p-2.5">
         <Switch checked={Boolean(value)} onCheckedChange={onChange} />
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs font-medium text-foreground">
           {value ? "Enabled" : "Disabled"}
         </span>
       </div>
@@ -242,6 +246,7 @@ function renderField(
       onChange={(e) =>
         onChange(t === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)
       }
+      className={cn("h-9 text-xs bg-muted/20 border-border/80 focus-visible:bg-card", hasError && "border-destructive")}
     />
   );
 }
