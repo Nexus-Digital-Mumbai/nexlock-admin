@@ -34,8 +34,8 @@ type TrendsResponse = {
   dealers: TrendPoint[];
 };
 
-const ENROLLMENT_COLOR = "#1265D8";
-const DEALERS_COLOR = "#08BFEA";
+const ENROLLMENT_COLOR = "#006BFF";
+const DEALERS_COLOR = "#00D4FF";
 
 function localDayBoundary(dateStr: string, edge: "start" | "end"): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -226,33 +226,33 @@ function AnalyticsPage() {
       />
 
       {/* Filter and Range Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-xl">
+      <div className="glass-toolbar p-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Select value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
-            <SelectTrigger className="w-[150px] h-10 rounded-full text-xs bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 font-medium shadow-xs">
+            <SelectTrigger className="glass-pill w-[150px] h-10 rounded-full text-xs text-[#071B5E] dark:text-[#F5F8FF] font-medium shadow-xs hover:border-[#0755D8]/40 dark:hover:border-[#00D4FF]/40">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl border-white/80 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl">
-              <SelectItem value="day" className="text-xs rounded-xl">Day-by-Day</SelectItem>
-              <SelectItem value="week" className="text-xs rounded-xl">Weekly Rollup</SelectItem>
-              <SelectItem value="month" className="text-xs rounded-xl">Monthly Rollup</SelectItem>
+            <SelectContent className="card-elevated rounded-2xl p-1 text-[#071B5E] dark:text-[#F5F8FF] shadow-xl">
+              <SelectItem value="day" className="text-xs rounded-xl hover:bg-[#0755D8]/10 dark:hover:bg-[#006BFF]/15">Day-by-Day</SelectItem>
+              <SelectItem value="week" className="text-xs rounded-xl hover:bg-[#0755D8]/10 dark:hover:bg-[#006BFF]/15">Weekly Rollup</SelectItem>
+              <SelectItem value="month" className="text-xs rounded-xl hover:bg-[#0755D8]/10 dark:hover:bg-[#006BFF]/15">Monthly Rollup</SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-2 rounded-full border border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 px-3.5 py-1.5 text-xs text-muted-foreground shadow-xs">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="glass-pill flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs text-[#071B5E] dark:text-[#8CA5C8] shadow-xs">
+            <Calendar className="h-3.5 w-3.5 text-[#0755D8] dark:text-[#00D4FF]" />
             <input
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="bg-transparent text-xs text-[#071B5E] dark:text-[#F5F8FF] focus:outline-none"
             />
-            <span className="text-muted-foreground/50">to</span>
+            <span className="text-slate-400 dark:text-[#8CA5C8]/50">to</span>
             <input
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="bg-transparent text-xs text-[#071B5E] dark:text-[#F5F8FF] focus:outline-none"
             />
           </div>
 

@@ -193,14 +193,14 @@ function CustomersPage() {
       </div>
 
       {/* Search Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-xl">
+      <div className="glass-toolbar p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4B6188]/70 dark:text-[#8CA5C8]/80" />
           <Input
             placeholder="Search by customer name, phone, code…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 pl-11 pr-8 text-xs md:text-sm rounded-full bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 focus-visible:bg-white shadow-xs"
+            className="glass-pill h-10 pl-11 pr-8 text-xs md:text-sm w-full text-[#071B5E] dark:text-[#F5F8FF] placeholder:text-slate-400 dark:placeholder:text-[#8CA5C8]/75 focus-visible:border-[#0755D8] dark:focus-visible:border-[#00D4FF] focus-visible:ring-[#0755D8]/20 dark:focus-visible:ring-[#00D4FF]/25 shadow-xs"
           />
           {search && (
             <button

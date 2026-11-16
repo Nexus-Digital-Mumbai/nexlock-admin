@@ -109,7 +109,7 @@ export function UniversalSearch() {
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          className="h-11 pl-11 pr-16 bg-white/70 dark:bg-white/10 backdrop-blur-xl border border-white/90 dark:border-white/15 rounded-full text-xs md:text-sm text-foreground placeholder:text-muted-foreground/75 shadow-sm hover:bg-white/85 focus-visible:bg-white dark:focus-visible:bg-slate-900/90 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all duration-200"
+          className="h-11 pl-11 pr-16 glass-pill w-full text-xs md:text-sm text-foreground dark:text-[#F5F8FF] placeholder:text-[#4B6188]/70 dark:placeholder:text-[#8CA5C8]/75 hover:border-primary/40 dark:hover:border-[#00D4FF]/50 focus-visible:border-primary dark:focus-visible:border-[#00D4FF] focus-visible:ring-2 focus-visible:ring-primary/25 transition-all duration-200"
         />
         <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
           {query && (
@@ -118,20 +118,20 @@ export function UniversalSearch() {
                 setQuery("");
                 setIsOpen(false);
               }}
-              className="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-black/5 transition-colors"
+              className="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-white/10 transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
           {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-          <kbd className="hidden select-none items-center gap-0.5 rounded-full border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground md:inline-flex">
+          <kbd className="hidden select-none items-center gap-0.5 rounded-full border border-border/80 bg-muted/60 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground md:inline-flex">
             ⌘K
           </kbd>
         </div>
       </div>
 
       {isOpen && query.trim().length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2.5 max-h-[460px] overflow-y-auto rounded-2xl border border-white/85 dark:border-white/15 bg-white/90 dark:bg-slate-900/95 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in-50 slide-in-from-top-1">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2.5 max-h-[460px] overflow-y-auto rounded-2xl card-elevated p-2 shadow-2xl animate-in fade-in-50 slide-in-from-top-1 text-foreground dark:text-[#F5F8FF]">
           {isLoading && query === debouncedQuery ? (
             <div className="flex items-center justify-center p-6 text-xs text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" /> Searching Nexus database…

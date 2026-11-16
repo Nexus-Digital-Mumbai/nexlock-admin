@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/api-client";
 import { session } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Operations Dashboard — Nexus Console" }] }),
@@ -53,27 +54,27 @@ function formatNumberVal(val: any) {
 function CustomChartTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-2xl border border-white/80 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 p-3.5 shadow-xl backdrop-blur-xl text-xs space-y-1.5 min-w-[130px]">
-        <div className="font-bold text-foreground border-b border-black/5 dark:border-white/10 pb-1">
+      <div className="rounded-2xl border border-white/80 dark:border-[#164675] bg-white/95 dark:bg-[#0B1D38]/95 p-3.5 shadow-xl backdrop-blur-xl text-xs space-y-1.5 min-w-[130px]">
+        <div className="font-bold text-foreground dark:text-[#F5F8FF] border-b border-border/60 dark:border-[#164675]/60 pb-1">
           {label}
         </div>
-        <div className="flex items-center justify-between text-[#8B5CF6]">
+        <div className="flex items-center justify-between text-[#0755D8] dark:text-[#006BFF]">
           <span className="flex items-center gap-1.5 font-medium">
-            <span className="h-2 w-2 rounded-full bg-[#8B5CF6]" /> Enrolled
+            <span className="h-2 w-2 rounded-full bg-[#0755D8] dark:bg-[#006BFF]" /> Enrolled
           </span>
-          <span className="font-bold font-mono">{formatNumberVal(payload[0]?.value)}</span>
+          <span className="font-bold font-mono text-foreground dark:text-[#F5F8FF]">{formatNumberVal(payload[0]?.value)}</span>
         </div>
-        <div className="flex items-center justify-between text-[#1E1B4B] dark:text-indigo-300">
+        <div className="flex items-center justify-between text-[#008CFF] dark:text-[#00D4FF]">
           <span className="flex items-center gap-1.5 font-medium">
-            <span className="h-2 w-2 rounded-full bg-[#1E1B4B] dark:bg-indigo-300" /> Locked
+            <span className="h-2 w-2 rounded-full bg-[#008CFF] dark:bg-[#00D4FF]" /> Locked
           </span>
-          <span className="font-bold font-mono">{formatNumberVal(payload[1]?.value)}</span>
+          <span className="font-bold font-mono text-foreground dark:text-[#F5F8FF]">{formatNumberVal(payload[1]?.value)}</span>
         </div>
-        <div className="flex items-center justify-between text-[#A78BFA]">
+        <div className="flex items-center justify-between text-muted-foreground dark:text-[#8CA5C8]">
           <span className="flex items-center gap-1.5 font-medium">
-            <span className="h-2 w-2 rounded-full bg-[#A78BFA]" /> Released
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 dark:bg-[#8CA5C8]" /> Released
           </span>
-          <span className="font-bold font-mono">{formatNumberVal(payload[2]?.value)}</span>
+          <span className="font-bold font-mono text-foreground dark:text-[#F5F8FF]">{formatNumberVal(payload[2]?.value)}</span>
         </div>
       </div>
     );
@@ -116,6 +117,7 @@ function generateDynamicTimeAxis(range: string) {
 
 function Dashboard() {
   const queryClient = useQueryClient();
+  const { isDark } = useTheme();
   const [activeRange, setActiveRange] = useState("30D");
   const user = session.getUser();
   const userName = user?.name
@@ -323,14 +325,14 @@ function Dashboard() {
   // Pie chart breakdown
   const pieData = totalDevices > 0
     ? [
-        { name: "Locked", value: lockedCount, color: "#6366F1" },
-        { name: "Unlocked", value: unlockedCount, color: "#C7D2FE" },
-        { name: "Released", value: releasedCount, color: "#E0E7FF" },
+        { name: "Locked", value: lockedCount, color: isDark ? "#006BFF" : "#0755D8" },
+        { name: "Unlocked", value: unlockedCount, color: isDark ? "#00D4FF" : "#008CFF" },
+        { name: "Released", value: releasedCount, color: isDark ? "#164675" : "#00C9E8" },
       ]
     : [
-        { name: "Locked", value: 0, color: "#6366F1" },
-        { name: "Unlocked", value: 0, color: "#C7D2FE" },
-        { name: "Released", value: 0, color: "#E0E7FF" },
+        { name: "Locked", value: 0, color: isDark ? "#006BFF" : "#0755D8" },
+        { name: "Unlocked", value: 0, color: isDark ? "#00D4FF" : "#008CFF" },
+        { name: "Released", value: 0, color: isDark ? "#164675" : "#00C9E8" },
       ];
 
   const totalPie = totalDevices;
@@ -341,11 +343,11 @@ function Dashboard() {
       {/* 1. Hero Greeting Banner from Reference Design */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#14172C] dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground dark:text-[#F5F8FF] flex items-center gap-2">
             <span>Good Morning, {userName}!</span>
             <span className="inline-block animate-wave">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-[#64748B] dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted-foreground dark:text-[#8CA5C8]">
             Here's what's happening with your NexLock platform today.
           </p>
         </div>
@@ -356,7 +358,7 @@ function Dashboard() {
             size="sm"
             onClick={handleSyncFleet}
             disabled={isRefetching}
-            className="h-10 rounded-full border border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 backdrop-blur-xl text-xs font-semibold px-4 shadow-xs hover:bg-white transition-all cursor-pointer"
+            className="glass-pill h-10 rounded-full text-xs font-semibold px-4 text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF] cursor-pointer"
           >
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isRefetching ? "animate-spin" : "")} />
             <span>Sync Fleet</span>
@@ -364,7 +366,7 @@ function Dashboard() {
           <Link to="/devices">
             <Button
               size="sm"
-              className="h-10 rounded-full bg-[#1E1B4B] hover:bg-[#2A2665] text-white text-xs font-semibold px-5 shadow-xs transition-all cursor-pointer"
+              className="h-10 rounded-full bg-[#071D62] hover:bg-[#0755D8] dark:bg-[#006BFF] dark:hover:bg-[#008CFF] text-white text-xs font-semibold px-5 shadow-[0_4px_14px_rgba(7,29,98,0.2)] dark:shadow-[0_4px_14px_rgba(0,107,255,0.35)] transition-all cursor-pointer"
             >
               <Smartphone className="h-3.5 w-3.5 mr-1.5" />
               <span>Fleet Manager</span>
@@ -435,17 +437,17 @@ function Dashboard() {
         <div className="card-surface lg:col-span-7 flex flex-col justify-between p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 dark:bg-[#006BFF]/15 text-primary dark:text-[#00D4FF] border border-primary/20 dark:border-[#006BFF]/30">
                 <BarChart3 className="h-5 w-5" />
               </div>
-              <h2 className="text-base font-bold text-[#14172C] dark:text-white">
+              <h2 className="text-base font-bold text-foreground dark:text-[#F5F8FF]">
                 Device Analytics
               </h2>
             </div>
 
             {/* Timeframe selector pills */}
             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-              <div className="flex items-center rounded-full bg-black/5 dark:bg-white/10 p-1 text-xs">
+              <div className="flex items-center rounded-full bg-white/80 dark:bg-[#061329] border border-white/80 dark:border-[#164675] p-1 text-xs">
                 {["7D", "30D", "90D", "1Y"].map((range) => (
                   <button
                     key={range}
@@ -453,8 +455,8 @@ function Dashboard() {
                     className={cn(
                       "rounded-full px-3 py-1 font-semibold transition-all cursor-pointer text-xs",
                       activeRange === range
-                        ? "bg-[#3D3882] text-white shadow-xs"
-                        : "text-[#64748B] dark:text-slate-300 hover:text-foreground"
+                        ? "bg-primary text-white shadow-xs"
+                        : "text-muted-foreground dark:text-[#8CA5C8] hover:text-foreground dark:hover:text-[#F5F8FF]"
                     )}
                   >
                     {range}
@@ -462,7 +464,7 @@ function Dashboard() {
                 ))}
               </div>
               <button
-                className="h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                className="h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground dark:text-[#8CA5C8] hover:bg-white/40 dark:hover:bg-white/10 hover:text-primary dark:hover:text-[#00D4FF] transition-colors"
                 title="Expand chart"
               >
                 <Maximize2 className="h-3.5 w-3.5" />
@@ -471,15 +473,15 @@ function Dashboard() {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-5 text-xs text-muted-foreground mb-4">
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-[#8B5CF6]" /> Enrolled
+          <div className="flex items-center gap-5 text-xs text-muted-foreground dark:text-[#8CA5C8] mb-4">
+            <span className="flex items-center gap-1.5 font-medium text-foreground dark:text-[#F5F8FF]">
+              <span className="h-2 w-2 rounded-full bg-[#0755D8] dark:bg-[#006BFF]" /> Enrolled
             </span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-[#1E1B4B] dark:bg-indigo-300" /> Locked
+            <span className="flex items-center gap-1.5 font-medium text-foreground dark:text-[#F5F8FF]">
+              <span className="h-2 w-2 rounded-full bg-[#008CFF] dark:bg-[#00D4FF]" /> Locked
             </span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-[#C4B5FD]" /> Released
+            <span className="flex items-center gap-1.5 font-medium text-muted-foreground dark:text-[#8CA5C8]">
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 dark:bg-[#8CA5C8]" /> Released
             </span>
           </div>
 
@@ -489,35 +491,35 @@ function Dashboard() {
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEnrolled" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={isDark ? "#006BFF" : "#0755D8"} stopOpacity={0.45} />
+                    <stop offset="95%" stopColor={isDark ? "#006BFF" : "#0755D8"} stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="colorLocked" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#312E81" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#312E81" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={isDark ? "#00D4FF" : "#008CFF"} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={isDark ? "#00D4FF" : "#008CFF"} stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="colorReleased" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C4B5FD" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#C4B5FD" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={isDark ? "#268AFF" : "#00C9E8"} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={isDark ? "#268AFF" : "#00C9E8"} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748B", fontSize: 11 }}
+                  tick={{ fill: isDark ? "#8CA5C8" : "#4B6188", fontSize: 11 }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748B", fontSize: 11 }}
+                  tick={{ fill: isDark ? "#8CA5C8" : "#4B6188", fontSize: 11 }}
                   tickFormatter={(val) => (val === 0 ? "0" : val >= 1000 ? `${(val / 1000).toFixed(1)}K` : String(val))}
                 />
                 <Tooltip content={<CustomChartTooltip />} />
                 <Area
                   type="monotone"
                   dataKey="enrolled"
-                  stroke="#8B5CF6"
+                  stroke={isDark ? "#006BFF" : "#0755D8"}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorEnrolled)"
@@ -525,7 +527,7 @@ function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="locked"
-                  stroke="#312E81"
+                  stroke={isDark ? "#00D4FF" : "#008CFF"}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorLocked)"
@@ -533,7 +535,7 @@ function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="released"
-                  stroke="#C4B5FD"
+                  stroke={isDark ? "#268AFF" : "#00C9E8"}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorReleased)"
@@ -547,19 +549,19 @@ function Dashboard() {
         <div className="card-surface lg:col-span-5 flex flex-col justify-between p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 dark:bg-[#006BFF]/15 text-primary dark:text-[#00D4FF] border border-primary/20 dark:border-[#006BFF]/30">
                 <Zap className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-[#14172C] dark:text-white">
+                <h2 className="text-base font-bold text-foreground dark:text-[#F5F8FF]">
                   Remote Device Control
                 </h2>
-                <p className="text-xs text-muted-foreground">Lock or Unlock devices instantly</p>
+                <p className="text-xs text-muted-foreground dark:text-[#8CA5C8]">Lock or Unlock devices instantly</p>
               </div>
             </div>
             <Link
               to="/devices"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/80 dark:border-white/10 bg-white/70 dark:bg-white/10 text-foreground hover:bg-white transition-colors"
+              className="glass-pill flex h-8 w-8 items-center justify-center rounded-full text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF]"
             >
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -569,21 +571,21 @@ function Dashboard() {
           <div className="my-4 flex items-center justify-between gap-4">
             <div className="relative flex items-center justify-center pl-2">
               {/* Radial glow background */}
-              <div className="absolute h-36 w-36 rounded-full bg-gradient-to-tr from-indigo-500/25 via-purple-500/15 to-transparent blur-2xl" />
+              <div className="absolute h-36 w-36 rounded-full bg-gradient-to-tr from-[#0755D8]/20 dark:from-[#006BFF]/30 via-[#008CFF]/15 dark:via-[#00D4FF]/20 to-transparent blur-2xl" />
 
               {/* 3D Phone Body */}
-              <div className="relative h-44 w-24 rounded-[26px] border-[3px] border-[#2A2B44] bg-[#0B0C18] p-1.5 shadow-2xl ring-1 ring-white/20 transform -rotate-6 transition-transform hover:rotate-0 duration-300">
+              <div className="relative h-44 w-24 rounded-[26px] border-[3px] border-white/85 dark:border-[#164675] bg-white/90 dark:bg-[#061329] p-1.5 shadow-2xl ring-1 ring-primary/20 dark:ring-[#006BFF]/30 transform -rotate-6 transition-transform hover:rotate-0 duration-300">
                 {/* Speaker notch */}
-                <div className="mx-auto h-1 w-7 rounded-full bg-[#2A2B44] mb-1" />
+                <div className="mx-auto h-1 w-7 rounded-full bg-slate-300 dark:bg-[#164675] mb-1" />
                 {/* Screen */}
-                <div className="flex h-[calc(100%-10px)] w-full flex-col items-center justify-center rounded-[20px] bg-gradient-to-b from-[#14162B] to-[#0A0B14] p-2 text-center overflow-hidden relative">
+                <div className="flex h-[calc(100%-10px)] w-full flex-col items-center justify-center rounded-[20px] bg-gradient-to-b from-blue-50/90 to-indigo-100/80 dark:from-[#0B1D38] dark:to-[#020B1C] p-2 text-center overflow-hidden relative">
                   {/* Subtle particle ring */}
-                  <div className="absolute inset-0 border border-primary/30 rounded-full animate-ping opacity-25" />
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/40 text-white">
+                  <div className="absolute inset-0 border border-primary/20 dark:border-[#00D4FF]/30 rounded-full animate-ping opacity-25" />
+                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0755D8] to-[#008CFF] dark:from-[#006BFF] dark:to-[#00D4FF] shadow-lg shadow-primary/30 dark:shadow-[#006BFF]/40 text-white">
                     <Shield className="h-6 w-6" />
                     <Lock className="absolute h-3 w-3 text-white" />
                   </div>
-                  <span className="mt-2 text-[9px] font-mono text-indigo-300">NEXLOCK</span>
+                  <span className="mt-2 text-[9px] font-mono text-[#0755D8] dark:text-[#00D4FF] font-semibold">NEXLOCK</span>
                 </div>
               </div>
             </div>
@@ -592,7 +594,7 @@ function Dashboard() {
             <div className="flex-1 space-y-3 pr-2">
               <Link to="/devices" className="block">
                 <Button
-                  className="w-full h-12 rounded-2xl bg-[#1E1E2F] hover:bg-[#2C2C42] text-white text-xs font-semibold gap-2 shadow-sm transition-all"
+                  className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#0755D8] to-[#008CFF] hover:from-[#008CFF] hover:to-[#0755D8] dark:from-[#006BFF] dark:to-[#00D4FF] text-white dark:text-[#020B1C] text-xs font-bold gap-2 shadow-[0_4px_16px_rgba(7,85,216,0.25)] dark:shadow-[0_4px_16px_rgba(0,107,255,0.35)] transition-all cursor-pointer"
                 >
                   <Lock className="h-4 w-4" />
                   <span>Lock Device</span>
@@ -602,9 +604,9 @@ function Dashboard() {
               <Link to="/devices" className="block">
                 <Button
                   variant="outline"
-                  className="w-full h-12 rounded-2xl border border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 hover:bg-white text-[#1E1E2F] dark:text-white text-xs font-semibold gap-2 shadow-xs transition-all"
+                  className="glass-pill w-full h-12 rounded-2xl text-[#071B5E] dark:text-[#F5F8FF] text-xs font-semibold gap-2 hover:bg-white/90 dark:hover:bg-[#0B1D38]/90 transition-all cursor-pointer"
                 >
-                  <Unlock className="h-4 w-4" />
+                  <Unlock className="h-4 w-4 text-[#0755D8] dark:text-[#00D4FF]" />
                   <span>Unlock Device</span>
                 </Button>
               </Link>
@@ -612,12 +614,12 @@ function Dashboard() {
           </div>
 
           {/* Bottom status indicators */}
-          <div className="flex items-center justify-between border-t border-black/5 dark:border-white/10 pt-3 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-border/60 dark:border-[#164675]/60 pt-3 text-xs text-muted-foreground dark:text-[#8CA5C8]">
             <span className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               {totalDevices > 0 ? "Telemetry Active" : "Fleet Ready"}
             </span>
-            <span className="text-[11px]">
+            <span className="text-[11px] text-muted-foreground dark:text-[#8CA5C8]">
               Last Sync: {summaryUpdatedAt ? formatRelativeTime(summaryUpdatedAt) : "Just now"}
             </span>
           </div>
@@ -629,10 +631,10 @@ function Dashboard() {
         {/* Card 1: Device Status Overview (Donut Chart) */}
         <div className="card-surface flex flex-col justify-between p-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#14172C] dark:text-white">
+            <h3 className="text-sm font-bold text-foreground dark:text-[#F5F8FF]">
               Device Status Overview
             </h3>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground dark:text-[#8CA5C8] bg-white/80 dark:bg-[#061329] border border-white/80 dark:border-[#164675] px-2 py-0.5 rounded-full">
               This Month <ChevronDown className="h-3 w-3" />
             </span>
           </div>
@@ -656,37 +658,37 @@ function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-xs font-extrabold text-foreground leading-tight">
+                <span className="text-xs font-extrabold text-foreground dark:text-[#F5F8FF] leading-tight">
                   {formatK(totalPie)}
                 </span>
-                <span className="text-[9px] text-muted-foreground leading-none">Total</span>
+                <span className="text-[9px] text-muted-foreground dark:text-[#8CA5C8] leading-none">Total</span>
               </div>
             </div>
 
             {/* Breakdown List */}
             <div className="space-y-1.5 text-xs flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-muted-foreground truncate">
-                  <span className="h-2 w-2 rounded-full bg-[#6366F1] shrink-0" /> Locked
+                <span className="flex items-center gap-1.5 text-muted-foreground dark:text-[#8CA5C8] truncate">
+                  <span className="h-2 w-2 rounded-full bg-[#0755D8] dark:bg-[#006BFF] shrink-0" /> Locked
                 </span>
-                <span className="font-semibold text-foreground font-mono">
-                  {formatK(lockedCount)} <span className="text-muted-foreground/70 font-normal">{lockedPct}%</span>
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-muted-foreground truncate">
-                  <span className="h-2 w-2 rounded-full bg-[#C7D2FE] shrink-0" /> Unlocked
-                </span>
-                <span className="font-semibold text-foreground font-mono">
-                  {formatK(unlockedCount)} <span className="text-muted-foreground/70 font-normal">{unlockedPct}%</span>
+                <span className="font-semibold text-foreground dark:text-[#F5F8FF] font-mono">
+                  {formatK(lockedCount)} <span className="text-muted-foreground/70 dark:text-[#8CA5C8]/70 font-normal">{lockedPct}%</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-muted-foreground truncate">
-                  <span className="h-2 w-2 rounded-full bg-[#E0E7FF] shrink-0" /> Released
+                <span className="flex items-center gap-1.5 text-muted-foreground dark:text-[#8CA5C8] truncate">
+                  <span className="h-2 w-2 rounded-full bg-[#008CFF] dark:bg-[#00D4FF] shrink-0" /> Unlocked
                 </span>
-                <span className="font-semibold text-foreground font-mono">
-                  {formatK(releasedCount)} <span className="text-muted-foreground/70 font-normal">{releasedPct}%</span>
+                <span className="font-semibold text-foreground dark:text-[#F5F8FF] font-mono">
+                  {formatK(unlockedCount)} <span className="text-muted-foreground/70 dark:text-[#8CA5C8]/70 font-normal">{unlockedPct}%</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-muted-foreground dark:text-[#8CA5C8] truncate">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground/60 dark:bg-[#164675] shrink-0" /> Released
+                </span>
+                <span className="font-semibold text-foreground dark:text-[#F5F8FF] font-mono">
+                  {formatK(releasedCount)} <span className="text-muted-foreground/70 dark:text-[#8CA5C8]/70 font-normal">{releasedPct}%</span>
                 </span>
               </div>
             </div>
@@ -697,12 +699,12 @@ function Dashboard() {
         <div className="card-surface flex flex-col justify-between p-5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
-              <Activity className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-bold text-[#14172C] dark:text-white">Recent Activity</h3>
+              <Activity className="h-4 w-4 text-primary dark:text-[#00D4FF]" />
+              <h3 className="text-sm font-bold text-foreground dark:text-[#F5F8FF]">Recent Activity</h3>
             </div>
             <Link
               to="/notifications"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
+              className="text-xs font-semibold text-primary dark:text-[#00D4FF] hover:underline flex items-center gap-0.5"
             >
               View All <ArrowRight className="h-3 w-3" />
             </Link>
@@ -714,14 +716,14 @@ function Dashboard() {
                 <div key={act.id} className="flex items-start gap-2.5">
                   <div
                     className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-lg shrink-0 mt-0.5",
+                      "flex h-7 w-7 items-center justify-center rounded-lg shrink-0 mt-0.5 border",
                       act.type === "Locked"
-                        ? "bg-indigo-500/15 text-indigo-600"
+                        ? "bg-primary/10 text-primary border-primary/20 dark:bg-[#006BFF]/15 dark:text-[#006BFF] dark:border-[#006BFF]/30"
                         : act.type === "Released"
-                          ? "bg-purple-500/15 text-purple-600"
+                          ? "bg-cyan-500/10 text-cyan-600 border-cyan-500/20 dark:bg-[#00D4FF]/15 dark:text-[#00D4FF] dark:border-[#00D4FF]/30"
                           : act.type === "Dealer"
-                            ? "bg-emerald-500/15 text-emerald-600"
-                            : "bg-amber-500/15 text-amber-600"
+                            ? "bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-emerald-500/30"
+                            : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30"
                     )}
                   >
                     {act.type === "Locked" ? (
@@ -736,10 +738,10 @@ function Dashboard() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-foreground truncate">{act.title}</p>
-                      <span className="text-[10px] text-muted-foreground">{act.time}</span>
+                      <p className="text-xs font-bold text-foreground dark:text-[#F5F8FF] truncate">{act.title}</p>
+                      <span className="text-[10px] text-muted-foreground dark:text-[#8CA5C8]">{act.time}</span>
                     </div>
-                    <p className="text-[11px] font-mono text-muted-foreground truncate">
+                    <p className="text-[11px] font-mono text-muted-foreground dark:text-[#8CA5C8] truncate">
                       {act.subtitle}
                     </p>
                   </div>
@@ -748,8 +750,8 @@ function Dashboard() {
             ) : (
               <div className="py-6 text-center">
                 <Activity className="h-5 w-5 mx-auto text-muted-foreground/40 mb-1.5" />
-                <p className="text-xs font-semibold text-foreground">No Activity Recorded</p>
-                <p className="text-[11px] text-muted-foreground">Fleet events will stream here live.</p>
+                <p className="text-xs font-semibold text-foreground dark:text-[#F5F8FF]">No Activity Recorded</p>
+                <p className="text-[11px] text-muted-foreground dark:text-[#8CA5C8]">Fleet events will stream here live.</p>
               </div>
             )}
           </div>
@@ -759,12 +761,12 @@ function Dashboard() {
         <div className="card-surface flex flex-col justify-between p-5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
-              <Trophy className="h-4 w-4 text-amber-500" />
-              <h3 className="text-sm font-bold text-[#14172C] dark:text-white">Top Dealers</h3>
+              <Trophy className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+              <h3 className="text-sm font-bold text-foreground dark:text-[#F5F8FF]">Top Dealers</h3>
             </div>
             <Link
               to="/dealers"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
+              className="text-xs font-semibold text-primary dark:text-[#00D4FF] hover:underline flex items-center gap-0.5"
             >
               View All <ArrowRight className="h-3 w-3" />
             </Link>
@@ -783,7 +785,7 @@ function Dashboard() {
                     >
                       {dealer.initial}
                     </span>
-                    <span className="text-xs font-semibold text-foreground truncate">
+                    <span className="text-xs font-semibold text-foreground dark:text-[#F5F8FF] truncate">
                       {dealer.name}
                     </span>
                   </div>
@@ -795,29 +797,29 @@ function Dashboard() {
             ) : (
               <div className="py-6 text-center">
                 <Store className="h-5 w-5 mx-auto text-muted-foreground/40 mb-1.5" />
-                <p className="text-xs font-semibold text-foreground">No Dealers Registered</p>
-                <p className="text-[11px] text-muted-foreground">Partner retail stores will appear here.</p>
+                <p className="text-xs font-semibold text-foreground dark:text-[#F5F8FF]">No Dealers Registered</p>
+                <p className="text-[11px] text-muted-foreground dark:text-[#8CA5C8]">Partner retail stores will appear here.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Card 4: Sapphire Obsidian Promo Card from Reference */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1C2038] via-[#15172C] to-[#0E1020] p-6 text-white shadow-xl flex flex-col justify-between">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D62] via-[#0B256B] to-[#1265D8] dark:from-[#0B1D38] dark:via-[#061329] dark:to-[#020B1C] border border-white/20 dark:border-[#164675] p-6 text-white shadow-xl flex flex-col justify-between">
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-400/30 shadow-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 dark:bg-[#006BFF]/20 text-white dark:text-[#00D4FF] border border-white/20 dark:border-[#00D4FF]/30 shadow-lg">
               <Shield className="h-6 w-6" />
             </div>
-            <Sparkles className="h-4 w-4 text-indigo-300 animate-pulse" />
+            <Sparkles className="h-4 w-4 text-cyan-300 dark:text-[#00D4FF] animate-pulse" />
           </div>
 
           <div className="relative z-10 my-3">
-            <h4 className="text-sm font-bold tracking-tight text-white leading-snug">
+            <h4 className="text-sm font-bold tracking-tight text-white dark:text-[#F5F8FF] leading-snug">
               {totalDevices > 0
                 ? `Securing ${totalDevices.toLocaleString()} Active Devices`
                 : "Powering Smarter Device Management"}
             </h4>
-            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+            <p className="text-[11px] text-blue-100/80 dark:text-[#8CA5C8] mt-1 leading-relaxed">
               {summary.totalDealers > 0
                 ? `Fleet telemetry coordinated across ${summary.totalDealers} verified dealer locations.`
                 : "Realtime telemetry & automated locking policies for device financing."}
@@ -827,7 +829,7 @@ function Dashboard() {
           <Link to="/devices" className="relative z-10">
             <Button
               size="sm"
-              className="w-full h-9 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs font-semibold gap-1.5 shadow-sm transition-all"
+              className="w-full h-9 rounded-full bg-white/20 hover:bg-white hover:text-[#071D62] dark:bg-[#006BFF] dark:hover:bg-[#00D4FF] dark:hover:text-[#020B1C] text-white dark:text-[#F5F8FF] border border-white/30 dark:border-[#006BFF]/40 text-xs font-semibold gap-1.5 shadow-sm transition-all"
             >
               <span>Explore More</span>
               <ArrowRight className="h-3.5 w-3.5" />

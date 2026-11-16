@@ -232,7 +232,7 @@ export function NotificationDrawer() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
-          className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/90 dark:border-white/15 bg-white/70 dark:bg-white/10 backdrop-blur-xl shadow-xs text-foreground/80 hover:bg-white hover:text-foreground hover:shadow-md transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+          className="relative flex h-11 w-11 items-center justify-center rounded-full glass-pill hover:border-primary/40 hover:text-primary dark:hover:text-[#00D4FF] hover:shadow-[0_0_15px_rgba(7,85,216,0.15)] dark:hover:shadow-[0_0_15px_rgba(0,212,255,0.2)] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 text-foreground"
           aria-label="Open notifications"
           title="Notifications"
         >
@@ -245,11 +245,11 @@ export function NotificationDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md flex flex-col p-0 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border-l border-white/80 dark:border-white/15 shadow-2xl">
-        <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-card/60">
+      <SheetContent className="w-full sm:max-w-md flex flex-col p-0 card-elevated border-l border-border shadow-2xl">
+        <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-card/40">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <SheetTitle className="text-sm font-bold tracking-tight text-foreground">Activity & Alerts</SheetTitle>
+              <SheetTitle className="text-sm font-bold tracking-tight text-foreground dark:text-[#F5F8FF]">Activity & Alerts</SheetTitle>
               {unreadCount > 0 && (
                 <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
                   {unreadCount} unread

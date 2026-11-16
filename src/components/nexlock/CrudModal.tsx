@@ -136,8 +136,8 @@ export function CrudModal<T extends Record<string, unknown>>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col bg-card text-card-foreground border border-border/80 p-0 overflow-hidden rounded-2xl shadow-2xl">
-        <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60 flex-shrink-0">
+      <DialogContent className="card-elevated max-w-2xl max-h-[85vh] flex flex-col text-card-foreground p-0 overflow-hidden rounded-2xl shadow-2xl">
+        <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60 flex-shrink-0">
           <DialogTitle className="text-base font-bold text-foreground">{title}</DialogTitle>
           {description && (
             <DialogDescription className="text-xs text-muted-foreground">{description}</DialogDescription>

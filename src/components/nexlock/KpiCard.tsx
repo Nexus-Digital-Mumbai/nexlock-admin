@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/theme";
 
 export function KpiCard({
   label,
@@ -17,21 +18,23 @@ export function KpiCard({
   trend?: { value: string; up: boolean };
   tone?: "primary" | "success" | "warning" | "danger";
 }) {
+  const { isDark } = useTheme();
+
   const toneConfig: Record<string, { iconBg: string; sparkColor: string }> = {
     primary: {
-      iconBg: "bg-[#EDE9FE] dark:bg-blue-950/40 text-[#1265D8] dark:text-blue-400 border border-white/80 dark:border-white/10",
-      sparkColor: "#1265D8",
+      iconBg: "bg-primary/10 text-primary border border-primary/20 dark:bg-[#006BFF]/15 dark:text-[#00D4FF] dark:border-[#006BFF]/30",
+      sparkColor: isDark ? "#00D4FF" : "#0755D8",
     },
     success: {
-      iconBg: "bg-[#DCFCE7] dark:bg-emerald-950/50 text-[#16A34A] dark:text-emerald-400 border border-white/80 dark:border-white/10",
+      iconBg: "bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30",
       sparkColor: "#10B981",
     },
     warning: {
-      iconBg: "bg-[#FEF3C7] dark:bg-amber-950/50 text-[#D97706] dark:text-amber-400 border border-white/80 dark:border-white/10",
+      iconBg: "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30",
       sparkColor: "#F59E0B",
     },
     danger: {
-      iconBg: "bg-[#FFE4E6] dark:bg-rose-950/50 text-[#E11D48] dark:text-rose-400 border border-white/80 dark:border-white/10",
+      iconBg: "bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/30",
       sparkColor: "#E11D48",
     },
   };
@@ -41,7 +44,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl border border-white/80 dark:border-white/10 bg-white/55 dark:bg-slate-900/50 p-5 shadow-[0_10px_30px_rgba(80,85,120,0.06)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-white/70 dark:hover:bg-slate-900/70"
+        "group relative overflow-hidden card-interactive p-5"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -55,10 +58,10 @@ export function KpiCard({
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-extrabold tracking-tight text-[#14172C] dark:text-white md:text-[28px] leading-tight font-sans">
+            <div className="text-2xl font-extrabold tracking-tight text-foreground dark:text-[#FFFFFF] md:text-[28px] leading-tight font-sans">
               {value}
             </div>
-            <div className="text-xs font-medium text-[#64748B] dark:text-slate-400 mt-0.5">
+            <div className="text-xs font-medium text-muted-foreground dark:text-[#8CA5C8] mt-0.5">
               {label}
             </div>
           </div>
@@ -96,7 +99,7 @@ export function KpiCard({
       </div>
 
       {sub && (
-        <div className="mt-3 border-t border-black/5 dark:border-white/10 pt-2 text-[11px] text-muted-foreground flex items-center justify-between">
+        <div className="mt-3 border-t border-[#164675]/60 pt-2 text-[11px] text-[#8CA5C8] flex items-center justify-between">
           <span>{sub}</span>
         </div>
       )}

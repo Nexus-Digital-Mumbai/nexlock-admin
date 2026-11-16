@@ -172,24 +172,24 @@ function DistributorBillingPage() {
       />
 
       {/* Date Filter & Presets Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-xl">
+      <div className="glass-toolbar p-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 rounded-full border border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 px-3.5 py-1.5 text-xs text-muted-foreground shadow-xs">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="glass-pill flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs text-[#071B5E] dark:text-[#8CA5C8] shadow-xs">
+            <Calendar className="h-3.5 w-3.5 text-[#0755D8] dark:text-[#00D4FF]" />
             <input
               type="date"
               value={from}
               max={to}
               onChange={(e) => setFrom(e.target.value)}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="bg-transparent text-xs text-[#071B5E] dark:text-[#F5F8FF] focus:outline-none"
             />
-            <span className="text-muted-foreground/50">to</span>
+            <span className="text-slate-400 dark:text-[#8CA5C8]/50">to</span>
             <input
               type="date"
               value={to}
               min={from}
               onChange={(e) => setTo(e.target.value)}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="bg-transparent text-xs text-[#071B5E] dark:text-[#F5F8FF] focus:outline-none"
             />
           </div>
           <Button

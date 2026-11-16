@@ -390,14 +390,14 @@ function DevicesPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-xl">
+      <div className="glass-toolbar p-4 flex flex-col gap-3 md:flex-row md:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/80" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4B6188]/70 dark:text-[#8CA5C8]/80" />
           <Input
             placeholder="Search by IMEI, Serial number, Device code, Brand or Model…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 pl-11 pr-8 bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 rounded-full text-xs md:text-sm text-foreground focus-visible:bg-white shadow-xs"
+            className="glass-pill h-10 pl-11 pr-8 w-full text-xs md:text-sm text-[#071B5E] dark:text-[#F5F8FF] placeholder:text-slate-400 dark:placeholder:text-[#8CA5C8]/75 focus-visible:border-[#0755D8] dark:focus-visible:border-[#00D4FF] focus-visible:ring-[#0755D8]/20 dark:focus-visible:ring-[#00D4FF]/25 shadow-xs"
           />
           {search && (
             <button
@@ -411,13 +411,13 @@ function DevicesPage() {
 
         <div className="w-full md:w-64">
           <Select value={dealerFilter} onValueChange={setDealerFilter}>
-            <SelectTrigger className="h-10 bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 rounded-full text-xs shadow-xs">
+            <SelectTrigger className="glass-pill h-10 text-[#071B5E] dark:text-[#F5F8FF] rounded-full text-xs shadow-xs hover:border-[#0755D8]/40 dark:hover:border-[#00D4FF]/40">
               <SelectValue placeholder="All Dealers" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl border-white/80 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl">
-              <SelectItem value="all" className="text-xs font-semibold rounded-xl">All Authorized Dealers</SelectItem>
+            <SelectContent className="rounded-2xl border-slate-200 dark:border-[#164675] bg-white/95 dark:bg-[#0B1D38]/95 text-[#071B5E] dark:text-[#F5F8FF] backdrop-blur-xl shadow-xl">
+              <SelectItem value="all" className="text-xs font-semibold rounded-xl hover:bg-[#0755D8]/10 dark:hover:bg-[#006BFF]/15">All Authorized Dealers</SelectItem>
               {dealers.map((d) => (
-                <SelectItem key={d.id} value={d.id} className="text-xs rounded-xl">{d.name}</SelectItem>
+                <SelectItem key={d.id} value={d.id} className="text-xs rounded-xl hover:bg-[#0755D8]/10 dark:hover:bg-[#006BFF]/15">{d.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

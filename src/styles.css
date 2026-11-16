@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 6px);
@@ -54,94 +54,113 @@
 }
 
 :root {
-  --radius: 1.125rem; /* 18px modern organic glass curve */
+  --radius: 1.25rem; /* 20px organic modern glass curve */
 
-  /* NEXUS Refined Theme with Subtle Blue Accents */
+  /* NEXUS Official Approved Light Theme Glassmorphism Palette */
   --background: oklch(0.975 0.008 280);             /* Radiant lavender-silver base */
-  --foreground: #071D62;                            /* Deep Navy Blue #071D62 text hierarchy */
-  --card: rgba(255, 255, 255, 0.64);                /* Translucent frosted-glass card */
-  --card-foreground: #071D62;                       /* Deep navy foreground */
-  --popover: rgba(255, 255, 255, 0.92);
-  --popover-foreground: #071D62;
-  --primary: #1265D8;                               /* Royal Blue #1265D8 - primary actions, accents */
-  --primary-foreground: #ffffff;
-  --secondary: rgba(237, 233, 254, 0.75);           /* Soft lavender pill #EDE9FE */
-  --secondary-foreground: #071D62;
-  --muted: rgba(243, 241, 255, 0.65);
-  --muted-foreground: #5B6A88;                      /* Slate-navy secondary text */
-  --accent: rgba(235, 241, 255, 0.85);              /* Soft blue-lavender capsule hover */
-  --accent-foreground: #071D62;                     /* Navy Blue text */
+  --foreground: #071B5E;                            /* Deep Navy #071B5E */
+  --card: rgba(255, 255, 255, 0.70);                /* 70% translucent frosted white glass */
+  --card-foreground: #071B5E;                       /* Deep Navy */
+  --popover: rgba(255, 255, 255, 0.90);             /* Elevated frosted glass surface */
+  --popover-foreground: #071B5E;
+  --primary: #0755D8;                               /* Royal Blue #0755D8 */
+  --primary-foreground: #FFFFFF;
+  --secondary: #EAF5FF;                             /* Ice Blue #EAF5FF */
+  --secondary-foreground: #071B5E;                  /* Deep Navy */
+  --muted: rgba(234, 245, 255, 0.75);
+  --muted-foreground: #4B6188;                      /* Slate-navy secondary text */
+  --accent: #EAF5FF;                                /* Ice Blue #EAF5FF */
+  --accent-foreground: #071B5E;                     /* Deep Navy */
   --destructive: oklch(0.62 0.22 25);               /* Coral red */
-  --destructive-foreground: #ffffff;
-  --success: oklch(0.66 0.19 155);                  /* Emerald green #10B981 */
-  --success-foreground: #ffffff;
-  --warning: oklch(0.75 0.17 75);                   /* Amber */
+  --destructive-foreground: #FFFFFF;
+  --success: oklch(0.66 0.19 155);                  /* Emerald green */
+  --success-foreground: #FFFFFF;
+  --warning: oklch(0.75 0.17 75);                   /* Amber warning */
   --warning-foreground: #1c1917;
-  --info: #08BFEA;                                  /* Electric Cyan #08BFEA */
-  --info-foreground: #071D62;
-  --border: rgba(255, 255, 255, 0.78);              /* Crisp specular glass highlight */
-  --input: rgba(255, 255, 255, 0.85);
-  --ring: #1265D8;                                  /* Royal Blue focus ring */
-  --chart-1: #1265D8;                               /* Royal Blue primary chart line */
-  --chart-2: #08BFEA;                               /* Electric Cyan secondary metric */
-  --chart-3: #9C8BEE;                               /* Soft Violet accent */
-  --chart-4: #071D62;                               /* Navy Blue indicator */
-  --chart-5: oklch(0.66 0.19 155);                  /* Emerald status indicator */
+  --info: #00C9E8;                                  /* Cyan #00C9E8 */
+  --info-foreground: #071B5E;
+  --border: rgba(255, 255, 255, 0.85);              /* Crisp specular glass highlight border */
+  --input: rgba(255, 255, 255, 0.80);
+  --ring: #008CFF;                                  /* Electric Blue #008CFF focus ring */
+  --chart-1: #0755D8;                               /* Royal Blue */
+  --chart-2: #008CFF;                               /* Electric Blue */
+  --chart-3: #00C9E8;                               /* Cyan */
+  --chart-4: #071B5E;                               /* Deep Navy */
+  --chart-5: #EAF5FF;                               /* Ice Blue */
 
-  /* Translucent Frosted Sidebar with Subtle Nexus Accents */
-  --sidebar: rgba(255, 255, 255, 0.52);
-  --sidebar-foreground: #555C7A;
-  --sidebar-primary: #1265D8;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(237, 233, 254, 0.85);      /* Capsule active soft lavender */
-  --sidebar-accent-foreground: #071D62;
-  --sidebar-border: rgba(255, 255, 255, 0.80);
-  --sidebar-ring: #1265D8;
+  /* Translucent Frosted Sidebar (65% opacity + specular highlight) */
+  --sidebar: rgba(255, 255, 255, 0.65);
+  --sidebar-foreground: #4B6188;
+  --sidebar-primary: #0755D8;                       /* Royal Blue */
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EAF5FF;                        /* Ice Blue active capsule */
+  --sidebar-accent-foreground: #071B5E;             /* Deep Navy */
+  --sidebar-border: rgba(255, 255, 255, 0.85);
+  --sidebar-ring: #008CFF;                          /* Electric Blue */
 
-  --shadow-subtle: 0 2px 8px -2px rgba(7, 29, 98, 0.05);
-  --shadow-card: 0 12px 36px -6px rgba(7, 29, 98, 0.08), 0 4px 12px -2px rgba(7, 29, 98, 0.03);
-  --shadow-elevated: 0 20px 45px -8px rgba(7, 29, 98, 0.12), 0 8px 18px -4px rgba(7, 29, 98, 0.04);
-  --shadow-glow: 0 0 24px -4px rgba(18, 101, 216, 0.28);
+  /* Frosted Glass Blur & Saturation */
+  --glass-blur: 18px;
+  --glass-saturate: 155%;
+
+  /* Specular Frosted Glass Shadows (Top edge bevel + soft ambient drop) */
+  --shadow-subtle: 0 2px 8px -2px rgba(7, 27, 94, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+  --shadow-card: 0 10px 32px -4px rgba(7, 27, 94, 0.07), 0 2px 10px -2px rgba(7, 27, 94, 0.03), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+  --shadow-elevated: 0 18px 45px -6px rgba(7, 85, 216, 0.12), 0 4px 14px -2px rgba(7, 27, 94, 0.04), inset 0 1px 2px 0 rgba(255, 255, 255, 0.98);
+  --shadow-glow: 0 0 24px -2px rgba(7, 85, 216, 0.28);
 }
 
 .dark {
-  /* Retain glass aesthetic in dark mode with dark sapphire obsidian tones */
-  --background: oklch(0.12 0.03 275);
-  --foreground: oklch(0.96 0.01 270);
-  --card: rgba(18, 22, 42, 0.68);
-  --card-foreground: oklch(0.96 0.01 270);
-  --popover: rgba(20, 24, 46, 0.92);
-  --popover-foreground: oklch(0.96 0.01 270);
-  --primary: #2575FC;                               /* Vibrant Royal Blue in dark mode */
-  --primary-foreground: #ffffff;
-  --secondary: rgba(45, 50, 85, 0.65);
-  --secondary-foreground: oklch(0.96 0.01 270);
-  --muted: rgba(30, 35, 65, 0.6);
-  --muted-foreground: oklch(0.70 0.03 270);
-  --accent: rgba(28, 55, 115, 0.45);
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.64 0.22 27);
-  --destructive-foreground: #ffffff;
-  --success: oklch(0.70 0.17 152);
-  --warning: oklch(0.76 0.16 72);
-  --info: #08BFEA;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #2575FC;
+  /* NEXUS Official Approved Dark Theme Glassmorphism Palette */
+  --background: #020B1C;                            /* Deep Navy Background #020B1C */
+  --foreground: #F5F8FF;                            /* Primary Text #F5F8FF */
+  --card: rgba(11, 29, 56, 0.78);                   /* 78% translucent deep navy glass #0B1D38 */
+  --card-foreground: #F5F8FF;
+  --popover: rgba(11, 29, 56, 0.92);                /* Elevated navy glass surface */
+  --popover-foreground: #F5F8FF;
+  --primary: #006BFF;                               /* Primary Blue #006BFF */
+  --primary-foreground: #FFFFFF;
+  --secondary: #061329;                             /* Sidebar / Dark Navy #061329 */
+  --secondary-foreground: #F5F8FF;
+  --muted: rgba(22, 70, 117, 0.40);
+  --muted-foreground: #8CA5C8;                      /* Soft Muted Blue-Grey Text */
+  --accent: rgba(0, 107, 255, 0.16);
+  --accent-foreground: #00D4FF;                     /* Electric Cyan */
+  --destructive: oklch(0.64 0.22 27);               /* Preserved Coral Red */
+  --destructive-foreground: #FFFFFF;
+  --success: oklch(0.70 0.17 152);                  /* Preserved Emerald Green */
+  --success-foreground: #FFFFFF;
+  --warning: oklch(0.76 0.16 72);                   /* Preserved Amber Warning */
+  --warning-foreground: #1c1917;
+  --info: #00D4FF;                                  /* Electric Cyan #00D4FF */
+  --info-foreground: #020B1C;
+  --border: rgba(22, 70, 117, 0.70);                 /* Fine blue border #164675 */
+  --input: rgba(6, 19, 41, 0.82);                   /* Dark Navy Input Surface */
+  --ring: #00D4FF;                                  /* Electric Cyan #00D4FF Focus Ring */
+  --chart-1: #006BFF;                               /* Primary Blue */
+  --chart-2: #00D4FF;                               /* Electric Cyan */
+  --chart-3: #268AFF;                               /* Bright Blue */
+  --chart-4: #164675;                               /* Dark Navy Grid / Border */
+  --chart-5: #F5F8FF;                               /* Light Accent */
 
-  --sidebar: rgba(14, 18, 36, 0.75);
-  --sidebar-foreground: oklch(0.85 0.02 270);
-  --sidebar-primary: #2575FC;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(35, 50, 95, 0.55);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.10);
-  --sidebar-ring: #2575FC;
+  /* Translucent Frosted Sidebar (#061329 at 88% opacity) */
+  --sidebar: rgba(6, 19, 41, 0.88);
+  --sidebar-foreground: #8CA5C8;
+  --sidebar-primary: #006BFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(0, 107, 255, 0.18);
+  --sidebar-accent-foreground: #F5F8FF;
+  --sidebar-border: rgba(22, 70, 117, 0.70);
+  --sidebar-ring: #00D4FF;
 
-  --shadow-subtle: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 14px 40px -8px rgba(0, 0, 0, 0.5), 0 4px 16px -2px rgba(0, 0, 0, 0.35);
-  --shadow-elevated: 0 24px 50px -10px rgba(0, 0, 0, 0.65), 0 8px 24px -4px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 28px -2px rgba(18, 101, 216, 0.35);
+  /* Frosted Glass Blur & Saturation */
+  --glass-blur: 18px;
+  --glass-saturate: 155%;
+
+  /* Specular Dark Glass Shadows (Subtle cyan top edge bevel + ambient depth) */
+  --shadow-subtle: 0 2px 10px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(0, 212, 255, 0.12);
+  --shadow-card: 0 12px 36px -4px rgba(2, 11, 28, 0.80), 0 0 20px -2px rgba(0, 107, 255, 0.08), inset 0 1px 1px 0 rgba(0, 212, 255, 0.18);
+  --shadow-elevated: 0 20px 48px -6px rgba(2, 11, 28, 0.90), 0 0 32px -4px rgba(0, 212, 255, 0.18), inset 0 1px 2px 0 rgba(0, 212, 255, 0.28);
+  --shadow-glow: 0 0 28px -4px rgba(0, 212, 255, 0.35);
 }
 
 @layer base {
@@ -158,7 +177,7 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    /* Nexus Liquid-Wave Lavender & Electric Blue Global Background */
+    /* Nexus Liquid-Wave Lavender & Electric Blue Global Background in Light Mode */
     background-image: url('/nexus-background.jpg');
     background-size: cover;
     background-position: center top;
@@ -167,6 +186,16 @@
     background-color: #f3f0fb;
     color: var(--color-foreground);
     min-height: 100vh;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Nexus Liquid-Wave Artwork in Premium Deep Navy & Blue Lighting (#020B1C) in Dark Mode */
+  html.dark body,
+  body.dark,
+  .dark body {
+    background-image: linear-gradient(180deg, rgba(2, 11, 28, 0.84) 0%, rgba(2, 11, 28, 0.93) 100%), url('/nexus-background.jpg');
+    background-color: #020B1C;
+    color: var(--color-foreground);
   }
 
   /* Custom glassmorphism scrollbars */
@@ -185,39 +214,50 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(120, 125, 170, 0.55);
   }
+
+  :is(.dark, html.dark) ::-webkit-scrollbar-thumb {
+    background: rgba(22, 70, 117, 0.6);
+  }
+  :is(.dark, html.dark) ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.5);
+  }
 }
 
-/* Glassmorphism Surface Utility Classes matching reference */
+/* Glassmorphism Surface Utility Classes matching approved design tokens */
 @utility card-surface {
   background-color: var(--color-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @utility card-interactive {
   background-color: var(--color-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
-    border-color: rgba(255, 255, 255, 0.95);
-    background-color: rgba(255, 255, 255, 0.75);
+    border-color: var(--color-ring);
     box-shadow: var(--shadow-elevated);
     transform: translateY(-2px);
   }
 }
 
 @utility card-elevated {
-  background-color: var(--color-card);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background-color: var(--color-popover);
+  backdrop-filter: blur(calc(var(--glass-blur, 18px) + 4px)) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 18px) + 4px)) saturate(var(--glass-saturate, 155%));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-elevated);
@@ -225,18 +265,30 @@
 
 @utility glass-panel {
   background-color: var(--color-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
   border: 1px solid var(--color-border);
 }
 
 @utility glass-pill {
-  background-color: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  background-color: var(--color-card);
+  backdrop-filter: blur(16px) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(16px) saturate(var(--glass-saturate, 155%));
+  border: 1px solid var(--color-border);
   border-radius: 9999px;
-  box-shadow: 0 2px 10px -2px rgba(80, 85, 125, 0.06);
+  box-shadow: var(--shadow-subtle);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility glass-toolbar {
+  background-color: var(--color-card);
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(var(--glass-saturate, 155%));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-3xl);
+  box-shadow: var(--shadow-card);
 }
 
 @utility glow-primary {
@@ -245,6 +297,26 @@
 
 @utility badge-glow {
   box-shadow: 0 0 12px -2px currentColor;
+}
+
+/* Fallback for browsers not supporting backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .card-surface,
+  .card-interactive,
+  .card-elevated,
+  .glass-pill,
+  .glass-panel,
+  .glass-toolbar {
+    background-color: rgba(255, 255, 255, 0.94);
+  }
+  .dark .card-surface,
+  .dark .card-interactive,
+  .dark .card-elevated,
+  .dark .glass-pill,
+  .dark .glass-panel,
+  .dark .glass-toolbar {
+    background-color: rgba(11, 29, 56, 0.96);
+  }
 }
 
 @keyframes nexlock-shake {

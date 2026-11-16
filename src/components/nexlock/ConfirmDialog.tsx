@@ -32,7 +32,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-2xl border border-border/80 bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-150">
+      <AlertDialogContent className="card-elevated max-w-md rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-150">
         <AlertDialogHeader>
           <div className="flex items-start gap-4">
             <div

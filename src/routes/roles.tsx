@@ -285,7 +285,7 @@ function RolesPage() {
 
       {/* CREATE ROLE MODAL */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-md rounded-2xl border-border/80 shadow-2xl p-6 bg-card">
+        <DialogContent className="card-elevated max-w-md rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Create Access Role</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -322,7 +322,7 @@ function RolesPage() {
 
       {/* EDIT ROLE MODAL */}
       <Dialog open={!!editRole} onOpenChange={(o) => !o && setEditRole(null)}>
-        <DialogContent className="max-w-md rounded-2xl border-border/80 shadow-2xl p-6 bg-card">
+        <DialogContent className="card-elevated max-w-md rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Edit Role Details</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">{editRole?.name}</DialogDescription>
@@ -355,8 +355,8 @@ function RolesPage() {
 
       {/* VIEW ROLE MODAL */}
       <Dialog open={!!viewRole} onOpenChange={(o) => !o && setViewRole(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
-          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+        <DialogContent className="card-elevated max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl shadow-2xl">
+          <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60">
             <DialogTitle className="text-base font-bold text-foreground">{viewRole?.name}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">{viewRole?.description || "No description provided"}</DialogDescription>
           </DialogHeader>
@@ -392,8 +392,8 @@ function RolesPage() {
 
       {/* ASSIGN PERMISSIONS MATRIX MODAL */}
       <Dialog open={!!permRole} onOpenChange={(o) => !o && setPermRole(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
-          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+        <DialogContent className="card-elevated max-w-2xl max-h-[90vh] flex flex-col p-0 rounded-2xl shadow-2xl">
+          <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60">
             <DialogTitle className="text-base font-bold text-foreground">
               Permissions Matrix — {permRole?.name}
             </DialogTitle>

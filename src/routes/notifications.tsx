@@ -383,8 +383,8 @@ function NotificationsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Inbox List Section */}
-        <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs lg:col-span-2 flex flex-col min-h-[500px]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/80 p-4 gap-3 bg-card/60">
+        <div className="card-surface rounded-2xl overflow-hidden lg:col-span-2 flex flex-col min-h-[500px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 p-4 gap-3 bg-card/60">
             <div className="relative w-full max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
@@ -484,8 +484,8 @@ function NotificationsPage() {
         </div>
 
         {/* Preferences Matrix Card */}
-        <div className="overflow-hidden rounded-xl border border-border/80 bg-card p-5 shadow-xs h-fit space-y-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-border/80">
+        <div className="card-surface rounded-2xl p-5 h-fit space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-border/60">
             <SlidersHorizontal className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground">Delivery Preferences</h3>
           </div>

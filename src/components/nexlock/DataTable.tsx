@@ -251,9 +251,9 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/80 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl shadow-[0_12px_36px_-6px_rgba(100,105,145,0.08)] transition-all">
+    <div className="card-surface overflow-hidden rounded-3xl transition-all">
       {/* Table Toolbar */}
-      <div className="flex flex-col gap-3 border-b border-white/60 dark:border-white/10 p-4 md:flex-row md:items-center md:justify-between bg-white/40 dark:bg-white/5 backdrop-blur-md">
+      <div className="flex flex-col gap-3 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between bg-white/40 dark:bg-[#061329]/60 backdrop-blur-md">
         {!hideSearch && (
           <div className="relative w-full md:max-w-sm">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/80" />
@@ -261,7 +261,7 @@ export function DataTable<T>({
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
               placeholder={searchPlaceholder}
-              className="h-10 pl-10 pr-8 text-xs rounded-full bg-white/80 dark:bg-white/10 border-white/90 dark:border-white/15 hover:bg-white focus-visible:bg-white shadow-xs transition-all"
+              className="glass-pill h-10 pl-10 pr-8 text-xs rounded-full w-full text-foreground dark:text-[#F5F8FF] placeholder:text-muted-foreground dark:placeholder:text-[#8CA5C8]/75 focus-visible:border-primary dark:focus-visible:border-[#00D4FF] focus-visible:ring-primary/20 dark:focus-visible:ring-[#00D4FF]/25 shadow-xs transition-all"
             />
             {query && (
               <button
@@ -294,7 +294,7 @@ export function DataTable<T>({
           <Button
             variant={showColumnFilters || activeFilterCount > 0 ? "secondary" : "outline"}
             size="sm"
-            className="h-10 rounded-full gap-1.5 text-xs font-medium border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 hover:bg-white shadow-xs px-4"
+            className="glass-pill h-10 rounded-full gap-1.5 text-xs font-medium text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF] px-4 cursor-pointer"
             onClick={() => {
               setShowColumnFilters(!showColumnFilters);
               if (showColumnFilters) setColumnFilters({});
@@ -311,11 +311,11 @@ export function DataTable<T>({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10 rounded-full gap-1.5 text-xs font-medium border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 hover:bg-white shadow-xs px-4">
+              <Button variant="outline" size="sm" className="glass-pill h-10 rounded-full gap-1.5 text-xs font-medium text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF] px-4 cursor-pointer">
                 <Download className="h-3.5 w-3.5" />Export
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border border-white/80 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5">
+            <DropdownMenuContent align="end" className="card-elevated w-48 rounded-2xl p-1.5 text-foreground dark:text-[#F5F8FF] shadow-xl">
               <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer gap-2 text-xs font-medium rounded-xl px-3 py-2">
                 <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Export as CSV (Excel)
               </DropdownMenuItem>
@@ -330,7 +330,7 @@ export function DataTable<T>({
       {/* Table Container */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 z-10 border-b border-white/60 dark:border-white/10 bg-white/50 dark:bg-white/5 text-[11px] font-bold uppercase tracking-wider text-[#64748B] dark:text-slate-400 backdrop-blur-md">
+          <thead className="sticky top-0 z-10 border-b border-white/60 dark:border-[#164675] bg-white/60 dark:bg-[#061329]/90 text-[11px] font-bold uppercase tracking-wider text-muted-foreground dark:text-[#8CA5C8] backdrop-blur-md">
             <tr>
               <th className="w-10 px-4 py-3.5 text-left">
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all rows" />
@@ -449,7 +449,7 @@ export function DataTable<T>({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border border-border">
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border border-white/80 dark:border-[#164675] bg-white/95 dark:bg-[#0B1D38]/95 backdrop-blur-xl text-foreground dark:text-[#F5F8FF]">
                           {rowActions
                             .filter((a) => !a.show || a.show(row))
                             .map((a, i) => (
@@ -458,7 +458,7 @@ export function DataTable<T>({
                                 <DropdownMenuItem
                                   onClick={() => a.onClick(row)}
                                   className={cn(
-                                    "cursor-pointer text-xs font-medium py-2",
+                                    "cursor-pointer text-xs font-medium py-2 hover:bg-primary/10 dark:hover:bg-[#006BFF]/15 focus:bg-primary/15 dark:focus:bg-[#006BFF]/20 text-foreground dark:text-[#F5F8FF]",
                                     a.destructive && "text-destructive focus:bg-destructive/10 focus:text-destructive",
                                   )}
                                 >
@@ -481,7 +481,7 @@ export function DataTable<T>({
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col items-start justify-between gap-3 border-t border-white/60 dark:border-white/10 bg-white/40 dark:bg-white/5 px-5 py-3.5 text-xs text-muted-foreground md:flex-row md:items-center backdrop-blur-md">
+      <div className="flex flex-col items-start justify-between gap-3 border-t border-white/60 dark:border-[#164675] bg-white/50 dark:bg-[#061329]/75 px-5 py-3.5 text-xs text-muted-foreground dark:text-[#8CA5C8] md:flex-row md:items-center backdrop-blur-md">
         <div>
           Showing <span className="font-semibold text-foreground font-mono">{sorted.length === 0 ? 0 : start + 1}–{Math.min(start + pageSize, sorted.length)}</span> of <span className="font-semibold text-foreground font-mono">{sorted.length}</span> records
         </div>
@@ -491,7 +491,7 @@ export function DataTable<T>({
             size="sm"
             disabled={safePage === 1}
             onClick={() => setPage(safePage - 1)}
-            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white"
+            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-[#164675] bg-white/70 dark:bg-[#0B1D38]/80 text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF]"
             title="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -501,7 +501,7 @@ export function DataTable<T>({
               key={p}
               variant={p === safePage ? "default" : "outline"}
               size="sm"
-              className={cn("h-8 w-8 rounded-full p-0 text-xs font-semibold", p === safePage ? "bg-primary text-white shadow-xs" : "border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white")}
+              className={cn("h-8 w-8 rounded-full p-0 text-xs font-semibold", p === safePage ? "bg-primary text-white shadow-xs border-primary" : "border-white/80 dark:border-[#164675] bg-white/70 dark:bg-[#0B1D38]/80 text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF]")}
               onClick={() => setPage(p)}
             >
               {p}
@@ -513,7 +513,7 @@ export function DataTable<T>({
             size="sm"
             disabled={safePage === totalPages}
             onClick={() => setPage(safePage + 1)}
-            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 hover:bg-white"
+            className="h-8 w-8 rounded-full p-0 border-white/80 dark:border-[#164675] bg-white/70 dark:bg-[#0B1D38]/80 text-foreground dark:text-[#F5F8FF] hover:border-primary/40 dark:hover:border-[#00D4FF]/40 hover:text-primary dark:hover:text-[#00D4FF]"
             title="Next page"
           >
             <ChevronRight className="h-4 w-4" />

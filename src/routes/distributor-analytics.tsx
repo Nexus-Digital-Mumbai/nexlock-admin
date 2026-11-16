@@ -20,8 +20,8 @@ interface Analytics {
   ios: { totalEnrolled: number; trend: TrendPoint[] };
 }
 
-const ANDROID_COLOR = "#1265D8";
-const IOS_COLOR = "#08BFEA";
+const ANDROID_COLOR = "#006BFF";
+const IOS_COLOR = "#00D4FF";
 
 function monthLabel(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
@@ -46,7 +46,7 @@ function TrendChart({
   const chartData = data.map((p) => ({ ...p, label: monthLabel(p.month) }));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/80 bg-card p-5 shadow-xs transition-all">
+    <div className="card-surface rounded-2xl p-5 overflow-hidden transition-all">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div

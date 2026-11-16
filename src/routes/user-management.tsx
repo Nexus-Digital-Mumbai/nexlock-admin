@@ -274,16 +274,16 @@ function UsersPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/80 bg-card p-3.5 shadow-xs">
+      <div className="glass-toolbar p-3.5 flex flex-wrap items-center gap-3">
         <Input
           placeholder="Search by name, email, or role…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 w-full sm:w-64 text-xs bg-muted/30 border-border/70"
+          className="glass-pill h-9 w-full sm:w-64 text-xs"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-9 w-36 text-xs bg-muted/30 border-border/70"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent className="rounded-xl border-border shadow-xl">
+          <SelectTrigger className="glass-pill h-9 w-36 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent className="card-elevated rounded-xl p-1 shadow-xl">
             <SelectItem value="all" className="text-xs">All Statuses</SelectItem>
             <SelectItem value="active" className="text-xs">Active Only</SelectItem>
             <SelectItem value="disabled" className="text-xs">Disabled</SelectItem>
@@ -291,13 +291,13 @@ function UsersPage() {
           </SelectContent>
         </Select>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="h-9 w-44 text-xs bg-muted/30 border-border/70"><SelectValue placeholder="Role" /></SelectTrigger>
-          <SelectContent className="rounded-xl border-border shadow-xl">
+          <SelectTrigger className="glass-pill h-9 w-44 text-xs"><SelectValue placeholder="Role" /></SelectTrigger>
+          <SelectContent className="card-elevated rounded-xl p-1 shadow-xl">
             <SelectItem value="all" className="text-xs font-semibold">All Roles</SelectItem>
             {roles.map((r) => <SelectItem key={r.id} value={r.id} className="text-xs">{r.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" onClick={load} className="h-9 gap-1.5 text-xs font-medium border-border/80">
+        <Button variant="outline" size="sm" onClick={load} className="glass-pill h-9 gap-1.5 text-xs font-medium cursor-pointer">
           <RefreshCw className="h-3.5 w-3.5" />Refresh
         </Button>
       </div>
@@ -316,8 +316,8 @@ function UsersPage() {
 
       {/* CREATE USER MODAL */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
-          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+        <DialogContent className="card-elevated max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl shadow-2xl">
+          <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60">
             <DialogTitle className="text-base font-bold text-foreground">Add New Administrator</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">Provision a new staff account with granular role permissions.</DialogDescription>
           </DialogHeader>
@@ -374,8 +374,8 @@ function UsersPage() {
 
       {/* EDIT USER MODAL */}
       <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
-          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+        <DialogContent className="card-elevated max-w-lg max-h-[90vh] flex flex-col p-0 rounded-2xl shadow-2xl">
+          <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60">
             <DialogTitle className="text-base font-bold text-foreground">Edit User Profile</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">{editUser?.email}</DialogDescription>
           </DialogHeader>
@@ -420,8 +420,8 @@ function UsersPage() {
 
       {/* VIEW USER DETAILS MODAL */}
       <Dialog open={!!viewUser} onOpenChange={(o) => !o && setViewUser(null)}>
-        <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-0 rounded-2xl border-border/80 shadow-2xl bg-card">
-          <DialogHeader className="border-b border-border/80 px-6 py-4.5 bg-card/60">
+        <DialogContent className="card-elevated max-w-xl max-h-[90vh] flex flex-col p-0 rounded-2xl shadow-2xl">
+          <DialogHeader className="border-b border-border/60 px-6 py-4.5 bg-card/60">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 ring-2 ring-primary/20">
                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{viewUser ? initials(viewUser.name) : ""}</AvatarFallback>
@@ -502,7 +502,7 @@ function UsersPage() {
 
       {/* RESET PASSWORD MODAL */}
       <Dialog open={!!resetUser} onOpenChange={(o) => !o && setResetUser(null)}>
-        <DialogContent className="max-w-sm rounded-2xl border-border/80 shadow-2xl p-6 bg-card">
+        <DialogContent className="card-elevated max-w-sm rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">Reset Password</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">

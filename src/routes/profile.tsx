@@ -462,7 +462,7 @@ function ProfilePage() {
 
       {/* Change Password Dialog */}
       <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
-        <DialogContent className="max-w-md rounded-2xl border-border/80">
+        <DialogContent className="card-elevated max-w-md rounded-2xl p-6 shadow-2xl">
           <DialogHeader>
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">

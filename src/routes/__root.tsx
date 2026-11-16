@@ -11,6 +11,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/nexlock/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { session } from "@/lib/session";
+import { ThemeProvider } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -92,7 +93,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('nexus-theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d){document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';}else{document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');document.documentElement.style.colorScheme='light';}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>{children}<Scripts /></body>
     </html>
   );
@@ -104,16 +112,18 @@ function RootComponent() {
   const isAuthRoute = pathname === "/login" || pathname === "/distributor-login" || pathname === "/privacy" || pathname === "/terms";
   return (
     <QueryClientProvider client={queryClient}>
-      {isAuthRoute ? (
-        <Outlet />
-      ) : (
-        <AuthGate>
-          <AppShell>
-            <Outlet />
-          </AppShell>
-        </AuthGate>
-      )}
-      <Toaster position="top-right" />
+      <ThemeProvider>
+        {isAuthRoute ? (
+          <Outlet />
+        ) : (
+          <AuthGate>
+            <AppShell>
+              <Outlet />
+            </AppShell>
+          </AuthGate>
+        )}
+        <Toaster position="top-right" />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
@@ -140,7 +150,7 @@ function AuthGate({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
         <div className="relative flex h-20 w-20 items-center justify-center">
           <div className="absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/80 dark:border-white/15 bg-white/80 dark:bg-white/10 p-2 shadow-lg backdrop-blur-xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/80 dark:border-[#164675] bg-white/80 dark:bg-[#0B1D38]/85 p-2 shadow-[0_8px_25px_rgba(7,85,216,0.1)] dark:shadow-[0_8px_25px_rgba(0,107,255,0.2)] backdrop-blur-xl">
             <img
               src="/nexus-icon.png"
               alt="Nexus"

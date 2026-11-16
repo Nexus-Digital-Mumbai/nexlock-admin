@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/nexlock/Logo";
+import { ThemeToggle } from "@/components/nexlock/ThemeToggle";
 import { apiClient } from "@/lib/api-client";
 import { session } from "@/lib/session";
 
@@ -70,11 +71,16 @@ function DistributorLoginPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden antialiased selection:bg-primary/20">
+      {/* Top Header Theme Toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle />
+      </div>
+
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-12 lg:grid-cols-12 lg:px-12">
         {/* Left Information Panel */}
         <div className="hidden lg:col-span-7 lg:block space-y-7 animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/80 dark:border-white/15 bg-white/70 dark:bg-white/10 px-4 py-1.5 text-xs font-semibold text-[#1265D8] dark:text-blue-300 shadow-xs backdrop-blur-xl">
-            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+          <div className="glass-pill inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold text-[#0755D8] dark:text-[#00D4FF] shadow-xs">
+            <span className="flex h-2 w-2 rounded-full bg-[#008CFF] dark:bg-[#00D4FF] animate-pulse" />
             Nexus Distributor & Quota Ecosystem
           </div>
 
@@ -82,10 +88,10 @@ function DistributorLoginPage() {
             <div className="flex items-center mb-2">
               <Logo size="xl" />
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#071D62] dark:text-white sm:text-5xl lg:text-[46px] leading-[1.18]">
+            <h1 className="text-4xl font-extrabold tracking-tight text-[#071B5E] dark:text-[#F5F8FF] sm:text-5xl lg:text-[46px] leading-[1.18]">
               Manage Quota Pools & Sub-Dealer Networks.
             </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-[#5A5F7A] dark:text-slate-300">
+            <p className="max-w-xl text-sm leading-relaxed text-[#4B6188] dark:text-[#8CA5C8]">
               Allocate device enrollment limits to connector shops, review distributor billings, track live device activations, and streamline hardware onboarding under a single unified quota.
             </p>
           </div>
@@ -115,13 +121,13 @@ function DistributorLoginPage() {
             ].map((f) => (
               <div
                 key={f.title}
-                className="rounded-2xl border border-white/80 dark:border-white/10 bg-white/55 dark:bg-slate-900/50 p-4.5 shadow-sm backdrop-blur-xl transition-all hover:bg-white/70 dark:hover:bg-slate-900/70"
+                className="card-interactive rounded-2xl p-4.5"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary mb-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0755D8]/10 dark:bg-[#006BFF]/15 text-[#0755D8] dark:text-[#00D4FF] border border-[#0755D8]/20 dark:border-[#006BFF]/30 mb-2.5">
                   <f.icon className="h-4.5 w-4.5" />
                 </div>
-                <h2 className="text-sm font-bold text-[#14172C] dark:text-white">{f.title}</h2>
-                <p className="mt-1 text-xs text-[#64748B] dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                <h2 className="text-sm font-bold text-[#071B5E] dark:text-[#F5F8FF]">{f.title}</h2>
+                <p className="mt-1 text-xs text-[#4B6188] dark:text-[#8CA5C8] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -133,27 +139,27 @@ function DistributorLoginPage() {
             <Logo size="lg" />
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-white/85 dark:border-white/15 bg-white/70 dark:bg-slate-900/80 p-8 sm:p-9 shadow-[0_20px_50px_rgba(80,85,120,0.12)] backdrop-blur-2xl">
+          <div className="card-elevated rounded-3xl p-8 sm:p-9 shadow-[0_20px_50px_rgba(7,27,94,0.08)] dark:shadow-[0_20px_50px_rgba(2,11,28,0.85)]">
             <div className="mb-6 space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 p-1.5 shadow-xs">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 dark:border-[#164675] bg-slate-50 dark:bg-[#061329] p-1.5 shadow-xs">
                   <img src="/nexus-icon.png" alt="Nexus" className="h-full w-full object-contain" />
                 </div>
-                <span className="rounded-full bg-blue-500/15 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                <span className="rounded-full bg-[#0755D8]/15 dark:bg-[#006BFF]/20 border border-[#0755D8]/30 dark:border-[#006BFF]/35 px-2.5 py-0.5 text-[10px] font-bold text-[#0755D8] dark:text-[#00D4FF]">
                   Dealer App Credentials
                 </span>
               </div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-[#071D62] dark:text-white">
+              <h2 className="text-2xl font-extrabold tracking-tight text-[#071B5E] dark:text-[#F5F8FF]">
                 Distributor Sign In
               </h2>
-              <p className="text-xs leading-relaxed text-[#64748B] dark:text-slate-400">
+              <p className="text-xs leading-relaxed text-[#4B6188] dark:text-[#8CA5C8]">
                 Sign in with your registered dealer email and password to access quota tools.
               </p>
             </div>
 
             <form onSubmit={submit} noValidate className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="dist-email" className="text-xs font-semibold text-foreground">
+                <Label htmlFor="dist-email" className="text-xs font-semibold text-[#071B5E] dark:text-[#F5F8FF]">
                   Dealer Account Email
                 </Label>
                 <Input
@@ -164,16 +170,16 @@ function DistributorLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-invalid={!!errors.email}
-                  className={`h-11 rounded-2xl border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 text-foreground placeholder:text-muted-foreground/70 focus-visible:bg-white shadow-xs ${
+                  className={`h-11 rounded-2xl border-slate-200 dark:border-[#164675] bg-white/90 dark:bg-[#061329]/80 text-[#071B5E] dark:text-[#F5F8FF] placeholder:text-slate-400 dark:placeholder:text-[#8CA5C8]/60 focus-visible:bg-white dark:focus-visible:bg-[#061329] focus-visible:border-[#0755D8] dark:focus-visible:border-[#00D4FF] focus-visible:ring-[#0755D8]/20 dark:focus-visible:ring-[#00D4FF]/25 shadow-xs ${
                     errors.email ? "border-rose-500 focus-visible:ring-rose-500" : ""
                   }`}
                 />
-                {errors.email && <p className="text-[11px] font-medium text-rose-500">{errors.email}</p>}
+                {errors.email && <p className="text-[11px] font-medium text-rose-500 dark:text-rose-400">{errors.email}</p>}
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="dist-password" className="text-xs font-semibold text-foreground">
+                  <Label htmlFor="dist-password" className="text-xs font-semibold text-[#071B5E] dark:text-[#F5F8FF]">
                     Password
                   </Label>
                 </div>
@@ -186,26 +192,26 @@ function DistributorLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     aria-invalid={!!errors.password}
-                    className={`h-11 pr-11 rounded-2xl border-white/90 dark:border-white/15 bg-white/80 dark:bg-white/10 text-foreground placeholder:text-muted-foreground/70 focus-visible:bg-white shadow-xs ${
+                    className={`h-11 pr-11 rounded-2xl border-slate-200 dark:border-[#164675] bg-white/90 dark:bg-[#061329]/80 text-[#071B5E] dark:text-[#F5F8FF] placeholder:text-slate-400 dark:placeholder:text-[#8CA5C8]/60 focus-visible:bg-white dark:focus-visible:bg-[#061329] focus-visible:border-[#0755D8] dark:focus-visible:border-[#00D4FF] focus-visible:ring-[#0755D8]/20 dark:focus-visible:ring-[#00D4FF]/25 shadow-xs ${
                       errors.password ? "border-rose-500 focus-visible:ring-rose-500" : ""
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw((s) => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 dark:text-[#8CA5C8] hover:text-[#071B5E] dark:hover:text-[#F5F8FF] cursor-pointer"
                     aria-label={showPw ? "Hide password" : "Show password"}
                   >
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.password && <p className="text-[11px] font-medium text-rose-500">{errors.password}</p>}
+                {errors.password && <p className="text-[11px] font-medium text-rose-500 dark:text-rose-400">{errors.password}</p>}
               </div>
 
               <Button
                 type="submit"
                 disabled={loading}
-                className="mt-3 h-11 w-full rounded-2xl bg-[#071D62] hover:bg-[#1265D8] text-white font-semibold text-sm shadow-md transition-all cursor-pointer"
+                className="mt-3 h-11 w-full rounded-2xl bg-[#0755D8] hover:bg-[#008CFF] dark:bg-[#006BFF] dark:hover:bg-[#00D4FF] dark:hover:text-[#020B1C] text-white font-semibold text-sm shadow-[0_0_20px_rgba(7,85,216,0.25)] dark:shadow-[0_0_20px_rgba(0,107,255,0.35)] transition-all cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -223,7 +229,7 @@ function DistributorLoginPage() {
             <div className="mt-6 text-center">
               <Link
                 to="/login"
-                className="text-xs font-semibold text-[#1265D8] hover:underline transition-colors"
+                className="text-xs font-semibold text-[#0755D8] dark:text-[#00D4FF] hover:underline transition-colors"
               >
                 ← Return to Platform Administrator Login
               </Link>

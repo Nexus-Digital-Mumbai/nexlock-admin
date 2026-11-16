@@ -42,7 +42,7 @@ export function Logo({
   return (
     <div
       className={cn(
-        "relative flex shrink-0 items-center justify-center border border-white/85 dark:border-white/15 bg-white/80 dark:bg-white/10 shadow-[0_8px_25px_rgba(7,29,98,0.08)] backdrop-blur-xl transition-all duration-300 hover:scale-105",
+        "relative flex shrink-0 items-center justify-center border border-white/80 dark:border-[#164675] bg-white/80 dark:bg-[#0B1D38]/85 shadow-[0_8px_25px_rgba(7,85,216,0.1)] dark:shadow-[0_8px_25px_rgba(0,107,255,0.15)] backdrop-blur-xl transition-all duration-300 hover:scale-105",
         currentSize.tile,
         className
       )}
@@ -54,8 +54,8 @@ export function Logo({
       />
       {isPulseActive && (
         <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#08BFEA] opacity-75" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-900 bg-[#1265D8]" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00C9E8] dark:bg-[#00D4FF] opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#020B1C] bg-[#0755D8] dark:bg-[#006BFF]" />
         </span>
       )}
     </div>
