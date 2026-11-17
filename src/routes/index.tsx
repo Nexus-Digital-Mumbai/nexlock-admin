@@ -82,7 +82,15 @@ function CustomChartTooltip({ active, payload, label }: any) {
   return null;
 }
 
-function formatRelativeTime(dateStr?: string | Date) {
+interface RecentActivityItem {
+  id: string | number;
+  title: string;
+  subtitle: string;
+  time: string;
+  type: string;
+}
+
+function formatRelativeTime(dateStr?: string | Date | number) {
   if (!dateStr) return "Just now";
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
@@ -262,7 +270,7 @@ function Dashboard() {
   }, [trendsData, activeRange, lockedPct, releasedPct]);
 
   // Real Dynamic Recent Activities
-  const recentActivities = useMemo(() => {
+  const recentActivities: RecentActivityItem[] = useMemo(() => {
     if (summary.recentEnrollments && summary.recentEnrollments.length > 0) {
       return summary.recentEnrollments.slice(0, 3).map((item: any) => ({
         id: item.deviceId,
@@ -712,7 +720,7 @@ function Dashboard() {
 
           <div className="space-y-3 my-1">
             {recentActivities.length > 0 ? (
-              recentActivities.map((act) => (
+              recentActivities.map((act: RecentActivityItem) => (
                 <div key={act.id} className="flex items-start gap-2.5">
                   <div
                     className={cn(
